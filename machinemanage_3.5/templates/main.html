@@ -1,0 +1,36 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'plugins/layui/css/layui.css' %}" media="all">
+    <link rel="stylesheet" href="{% static '/plugins/font-awesome/css/font-awesome.min.css' %}" media="all">
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <div class="layui-fluid main" style="padding:50px">
+        <div class="layui-row layui-col-space15">
+            欢迎使用资产管理系统.
+        </div>
+    </div>
+    <script src="{% static 'plugins/layui/layui.js' %}"></script>
+    <script>
+        layui.use('jquery', function() {
+            var $ = layui.jquery;
+            $('#test').on('click', function() {
+                parent.message.show({
+                    skin: 'cyan'
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>

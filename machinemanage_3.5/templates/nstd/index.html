@@ -1,0 +1,820 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+<title>{% block title %}NSTD资产管理系统{% endblock %}</title>
+{% block content %}
+  <div class="layui-layout layui-layout-admin kit-layout-admin">
+    <div class="layui-header">
+      <div class="layui-logo">NSTD资产管理系统</div>
+      <div class="layui-logo kit-logo-mobile">K</div>
+      <ul class="layui-nav layui-layout-right kit-nav">
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <i class="layui-icon">&#xe63f;</i> 皮肤
+          </a>
+          <dl class="layui-nav-child skin">
+            <dd>
+              <a href="javascript:;" data-skin="green" style="color:#00a65a;">
+                <i class="layui-icon">&#xe658;</i> 原谅绿
+              </a>
+            </dd>
+            <dd><a href="javascript:;" data-skin="default" style="color:#393D49;">
+              <i class="layui-icon">&#xe658;</i> 蓝黑色</a>
+            </dd>
+            <dd>
+              <a href="javascript:;" data-skin="orange" style="color:#ff6700;">
+                <i class="layui-icon">&#xe658;</i> 橘子橙
+              </a>
+            </dd>
+            <dd>
+              <a href="javascript:;" data-skin="pink" style="color:#FA6086;">
+                <i class="layui-icon">&#xe658;</i> 少女粉
+              </a>
+            </dd>
+            <dd>
+              <a href="javascript:;" data-skin="blue.1" style="color:#00c0ef;">
+                <i class="layui-icon">&#xe658;</i> 天空蓝
+              </a>
+            </dd>
+            <dd>
+              <a href="javascript:;" data-skin="red" style="color:#dd4b39;">
+                <i class="layui-icon">&#xe658;</i> 枫叶红
+              </a>
+            </dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="javascript:;">
+            <img src="http://m.zhengjinfan.cn/images/0.jpg" class="layui-nav-img">
+            {{ request.session.u_nstd_name }}
+          </a>
+          <dl class="layui-nav-child">
+            {% ifequal request.session.authority_level 1 %}
+            <dd>
+              <a href="javascript:;" kit-target data-options="{url:'/nstd/user_manage',icon:'&#xe658;',title:'用户管理',id:'966'}">
+                <span>用户管理</span>
+              </a>
+            </dd>
+            <dd>
+              <a href="javascript:;" kit-target data-options="{url:'/nstd/authority_page',icon:'&#xe658;',title:'权限修改',id:'967'}">
+                <span>权限修改</span>
+              </a>
+            </dd>
+            {% endifequal %}
+            <dd>
+              <a href="javascript:;" kit-target data-options="{url:'/nstd/basic',icon:'&#xe658;',title:'基本资料',id:'968'}">
+                <span>基本资料</span>
+              </a>
+            </dd>
+            <dd>
+              <a href="javascript:;" kit-target data-options="{url:'/nstd/upd_passwd_page',icon:'&#xe673;',title:'修改密码',id:'969'}">
+                <span>修改密码</span>
+              </a>
+            </dd>
+          </dl>
+        </li>
+        <li class="layui-nav-item">
+          <a href="/nstd/logout">
+            <i class="fa fa-sign-out" aria-hidden="true"></i>注销
+          </a>
+        </li>
+      </ul>
+    </div>
+
+    <div class="layui-side layui-bg-black kit-side">
+      <div class="layui-side-scroll">
+        <div class="kit-side-fold">
+          <i class="fa fa-navicon" aria-hidden="true" style="height:35px;line-height:35px"></i>
+        </div>
+        <!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+        <ul class="layui-nav layui-nav-tree" lay-filter="kitNavbar" kit-navbar>
+          {% ifequal request.session.authority_level 1 %}
+          <li class="layui-nav-item layui-nav-itemed" id="basefunc">
+            <a class="" href="javascript:;">
+              <i class="layui-icon" aria-hidden="true">&#xe614;</i>
+              <span> 基本功能</span>
+            </a>
+            <dl class="layui-nav-child">
+              <dd id="basefunc_add">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_add_page" data-title="设备入库记账" kit-target data-id='1'>
+                  <i class="layui-icon">&#xe654;</i>   
+                  <span>设备入库记账</span>
+                </a>
+              </dd>
+              <dd id="basefunc_out">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_out_page" data-title="设备出库记账" kit-target data-id='2'>
+                  <i class="layui-icon">&#xe642;</i>
+                  <span>设备出库记账</span>
+                </a>
+              </dd>
+              <dd id="basefunc_back">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_back_page" data-title="设备退库记账" kit-target data-id='3'>
+                  <i class="layui-icon">&#xe65c;</i>
+                  <span>设备退库记账</span>
+                </a>
+              </dd>
+              <dd id="basefunc_zj">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_zj_page" data-title="支给设备" kit-target data-id='4'>
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>支给设备记账</span>
+                </a>
+              </dd>
+              <dd id="basefunc_zj_revert">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_zj_revert_page" data-title="支给设备归还" kit-target data-id='5'>
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>支给设备归还</span>
+                </a>
+              </dd>
+              <dd id="basefunc_loan_revert">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_loan_revert_page" data-title="借用设备归还" kit-target data-id='6'>
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>借用设备归还</span>
+                </a>
+              </dd>
+              <dd id="basefunc_sale">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_sale_page" data-title="设备销售记账" kit-target data-id='7'>
+                  <i class="layui-icon">&#xe659;</i>
+                  <span>设备销售记账</span>
+                </a>
+              </dd>
+              <dd id="basefunc_scrap">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_scrap_page" data-title="设备报废记账" kit-target data-id='8'>
+                  <i class="layui-icon">&#xe640;</i>
+                  <span>设备报废记账</span>
+                </a>
+              </dd>
+              
+              <dd id="basefunc_storage_move">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_instorage_move_page" data-title="库房内部移动" kit-target data-id='9'>
+                  <i class="layui-icon">&#xe609;</i>
+                  <span>库房内部移动</span>
+                </a>
+              </dd>
+              
+              <dd id="basefunc_online_move">
+                <a href="javascript:;" data-url="/nstd/basefunc/asset_online_move_page" data-title="设备在线移动" kit-target data-id='10'>
+                  <i class="layui-icon">&#xe609;</i>
+                  <span>设备在线移动</span>
+                </a>
+              </dd>
+            </dl>
+          </li>
+          {% else %}
+            {% ifequal request.session.authority.basefunc True %}
+              <li class="layui-nav-item layui-nav-itemed" id="basefunc">
+                <a class="" href="javascript:;">
+                  <i class="layui-icon" aria-hidden="true">&#xe614;</i>
+                  <span> 基本功能</span>
+                </a>
+                <dl class="layui-nav-child">
+                  {% ifequal request.session.authority.basefunc_add True %}
+                  <dd id="basefunc_add">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_add_page" data-title="设备入库记账" kit-target data-id='1'>
+                      <i class="layui-icon">&#xe654;</i>   
+                      <span>设备入库记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_out True %}
+                  <dd id="basefunc_out">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_out_page" data-title="设备出库记账" kit-target data-id='2'>
+                      <i class="layui-icon">&#xe642;</i>
+                      <span>设备出库记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_back True %}
+                  <dd id="basefunc_back">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_back_page" data-title="设备退库记账" kit-target data-id='3'>
+                      <i class="layui-icon">&#xe65c;</i>
+                      <span>设备退库记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_zj True %}
+                  <dd id="basefunc_zj">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_zj_page" data-title="支给设备" kit-target data-id='4'>
+                      <i class="layui-icon">&#xe658;</i>
+                      <span>支给设备记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_zj_revert True %}
+                  <dd id="basefunc_zj_revert">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_zj_revert_page" data-title="支给设备归还" kit-target data-id='5'>
+                      <i class="layui-icon">&#xe658;</i>
+                      <span>支给设备归还</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_loan_revert True %}
+                  <dd id="basefunc_loan_revert">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_loan_revert_page" data-title="借用设备归还" kit-target data-id='6'>
+                      <i class="layui-icon">&#xe658;</i>
+                      <span>借用设备归还</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_sale True %}
+                  <dd id="basefunc_sale">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_sale_page" data-title="设备销售记账" kit-target data-id='7'>
+                      <i class="layui-icon">&#xe659;</i>
+                      <span>设备销售记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_scrap True %}
+                  <dd id="basefunc_scrap">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_scrap_page" data-title="设备报废记账" kit-target data-id='8'>
+                      <i class="layui-icon">&#xe640;</i>
+                      <span>设备报废记账</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_storage_move True %}
+                  <dd id="basefunc_storage_move">
+                    <a href="javascript:;" data-url="/nstd/basefunc/instorage_move_page" data-title="库房移动查询" kit-target data-id='9'>
+                      <i class="layui-icon">&#xe609;</i>
+                      <span>库房移动查询</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                  {% ifequal request.session.authority.basefunc_online_move True %}
+                  <dd id="basefunc_online_move">
+                    <a href="javascript:;" data-url="/nstd/basefunc/asset_online_move_page" data-title="设备在线移动" kit-target data-id='10'>
+                      <i class="layui-icon">&#xe609;</i>
+                      <span>设备在线移动</span>
+                    </a>
+                  </dd>
+                  {% endifequal %}
+                </dl>
+              </li>
+            {% endifequal %}
+          {% endifequal %}
+          {% ifequal request.session.authority_level 1 %}
+          <li class="layui-nav-item layui-nav-itemed" id="general">
+            <a href="javascript:;">
+              <i class="layui-icon h45 lh45" aria-hidden="true">&#xe615;</i>
+              <span> 综合查询</span>
+            </a>
+            <dl class="layui-nav-child">
+              <dd id="general_total">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/total_search',icon:'&#xe658;',title:'总账信息查询',id:'11'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>总账信息查询</span>
+                </a>
+              </dd>
+              <dd id="general_record">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/opr_his_search',icon:'&#xe658;',title:'操作记录查询',id:'12'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>操作记录查询</span>
+                </a>
+              </dd>
+              <dd id="general_storage">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/in_storage_search',icon:'&#xe658;',title:'在库信息',id:'13'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>在库信息</span>
+                </a>
+              </dd>
+              <dd id="general_online">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/on_line_search',icon:'&#xe658',
+                  title:'在线信息',id:'14'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>在线信息</span>
+                </a>
+              </dd>
+              <dd id="general_scrap">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/scrap_search',icon:'&#xe658;',
+                  title:'报废信息',id:'15'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>报废信息</span>
+                </a>
+              </dd>
+              <dd id="general_sale">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/sale_search',icon:'&#xe658;',
+                  title:'销售信息',id:'16'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>销售信息</span>
+                </a>
+              </dd>
+              <dd id="general_zj">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/zj_search_page',icon:'&#xe658;',title:'支给信息',id:'17'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>支给信息</span>
+                </a>
+              </dd>
+              <dd id="general_add">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/add_search_page',icon:'&#xe658;',title:'入库信息',id:'18'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>入库信息</span>
+                </a>
+              </dd>
+              <dd id="general_out">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/out_storage_search',icon:'&#xe658;',title:'出库信息',id:'19'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>出库信息</span>
+                </a>
+              </dd>
+              <dd id="general_back">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/back_storage_search',icon:'&#xe658;',title:'退库信息',id:'20'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>退库信息</span>
+                </a>
+              </dd>
+              <dd id="general_loan_revert">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/loan_revert_search',icon:'&#xe658;',title:'借用归还',id:'21'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>借用归还</span>
+                </a>
+              </dd>
+              <dd id="general_zj_revert">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/zj_revert_page',icon:'&#xe658;',title:'支给归还',id:'22'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>支给归还</span>
+                </a>
+              </dd>
+              
+              <dd>
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/instorage_move_page',icon:'&#xe658;',title:'库房内部移动',id:'23'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>库房内部移动</span>
+                </a>
+              </dd>
+              
+              <dd id="general_online_move">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/general/move_search_page',icon:'&#xe658;',title:'在线移动查询',id:'24'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>在线移动查询</span>
+                </a>
+              </dd>
+            </dl>
+          </li>
+          {% else %}
+            {% ifequal request.session.authority.general True %}
+            <li class="layui-nav-item layui-nav-itemed" id="general">
+              <a href="javascript:;">
+                <i class="layui-icon h45 lh45" aria-hidden="true">&#xe615;</i>
+                <span> 综合查询</span>
+              </a>
+              <dl class="layui-nav-child">
+                {% ifequal request.session.authority.general_total True %}
+                <dd id="general_total">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/total_search',icon:'&#xe658;',title:'总账信息查询',id:'11'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>总账信息查询</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_record True %}
+                <dd id="general_record">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/opr_his_search',icon:'&#xe658;',title:'操作记录查询',id:'12'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>操作记录查询</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_instorage True %}
+                <dd id="general_instorage">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/in_storage_search',icon:'&#xe658;',title:'在库信息',id:'13'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>在库信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_online True %}
+                <dd id="general_online">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/on_line_search',icon:'&#xe658',
+                    title:'在线信息',id:'14'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>在线信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_scrap True %}
+                <dd id="general_scrap">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/scrap_search',icon:'&#xe658;',
+                    title:'报废信息',id:'15'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>报废信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_sale True %}
+                <dd id="general_sale">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/sale_search',icon:'&#xe658;',
+                    title:'销售信息',id:'16'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>销售信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_zj True %}
+                <dd id="general_zj">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/zj_search_page',icon:'&#xe658;',title:'支给信息',id:'17'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>支给信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_add True %}
+                <dd id="general_add">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/add_search_page',icon:'&#xe658;',title:'入库信息',id:'18'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>入库信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_out True %}
+                <dd id="general_out">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/out_storage_search',icon:'&#xe658;',title:'出库信息',id:'19'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>出库信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_back True %}
+                <dd id="general_back">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/back_storage_search',icon:'&#xe658;',title:'退库信息',id:'20'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>退库信息</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_loan_revert True %}
+                <dd id="general_loan_revert">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/loan_revert_search',icon:'&#xe658;',title:'借用归还',id:'21'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>借用归还</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.general_zj_revert True %}
+                <dd id="general_zj_revert">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/zj_revert_page',icon:'&#xe658;',title:'支给归还',id:'22'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>支给归还</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                
+                <dd>
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/move_search_page',icon:'&#xe658;',title:'库房内部移动',id:'23'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>库房内部移动</span>
+                  </a>
+                </dd>
+                
+                {% ifequal request.session.authority.general_move True %}
+                <dd id="general_move">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/general/move_search_page',icon:'&#xe658;',title:'在线移动查询',id:'24'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>在线移动查询</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+              </dl>
+            </li>
+            {% endifequal %}
+          {% endifequal %}
+          {% ifequal request.session.authority_level 1 %}
+          <li class="layui-nav-item layui-nav-itemed" id="baseinfo">
+            <a href="javascript:;">
+              <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+              <span> 基本信息设置</span>
+            </a>
+            <dl class="layui-nav-child" id="baseinfo_depart">
+              <dd>
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/baseinfo/depart_page',icon:'&#xe658;',title:'部门管理',id:'24'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span> 部门管理</span>
+                </a>
+              </dd>
+              <dd id="baseinfo_position">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/baseinfo/asset_pos_page',icon:'&#xe658;',title:'资产位置管理',id:'25'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>资产位置管理</span>
+                </a>
+              </dd>
+              <dd id="baseinfo_covert">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/baseinfo/asset_convert_page',icon:'&#xe658;',title:'资产转换',id:'26'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>资产转换管理</span>
+                </a>
+              </dd>
+              <dd id="baseinfo_update">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/baseinfo/asset_update_page',icon:'&#xe658;',title:'资产信息修改',id:'27'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>资产信息修改</span>
+                </a>
+              </dd>
+              <dd id="baseinfo_update">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/baseinfo/mobile_model_page',icon:'&#xe658;',title:'手持机种修改',id:'28'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>手持机种修改</span>
+                </a>
+              </dd>
+            </dl>
+          </li>
+          {% else %}
+            {% ifequal request.session.authority.baseinfo True %}
+            <li class="layui-nav-item layui-nav-itemed" id="baseinfo">
+              <a href="javascript:;">
+                <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+                <span> 基本信息设置</span>
+              </a>
+              <dl class="layui-nav-child">
+                {% ifequal request.session.authority.baseinfo_depart True %}
+                <dd id="baseinfo_depart">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/baseinfo/depart_page',icon:'&#xe658;',title:'部门管理',id:'24'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span> 部门管理</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.baseinfo_position True %}
+                <dd id="baseinfo_position">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/baseinfo/asset_pos_page',icon:'&#xe658;',title:'资产位置管理',id:'25'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产位置管理</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.baseinfo_convert True %}
+                <dd id="baseinfo_covert">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/baseinfo/asset_convert_page',icon:'&#xe658;',title:'资产转换',id:'26'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产转换管理</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.baseinfo_modify True %}
+                <dd id="baseinfo_modify">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/baseinfo/asset_update_page',icon:'&#xe658;',title:'资产信息修改',id:'27'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产信息修改</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.baseinfo_model True %}
+                <dd id="baseinfo_update">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/baseinfo/mobile_model_page',icon:'&#xe658;',title:'手持机种修改',id:'28'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>手持机种修改</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+              </dl>
+            </li>
+            {% endifequal %}
+          {% endifequal %}
+
+          <li class="layui-nav-item layui-nav-itemed" id="ventory">
+            <a href="javascript:;">
+              <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+              <span>资产盘点</span>
+            </a>
+            <dl class="layui-nav-child">
+              <dd id="calculate_confirm">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/ventory/online_ventory',icon:'&#xe658;',title:'在线盘点',id:'33'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>在线盘点</span>
+                </a>
+              </dd>
+              <dd id="calculate_confirm">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/ventory/instorage_ventory',icon:'&#xe658;',title:'库房盘点',id:'34'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>库房盘点</span>
+                </a>
+              </dd>
+            </dl>
+          </li>
+
+          {% ifequal request.session.authority_level 1 %}
+          <li class="layui-nav-item layui-nav-itemed" id="calculate">
+            <a href="javascript:;">
+              <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+              <span> 计量信息管理</span>
+            </a>
+            <dl class="layui-nav-child">
+              <dd id="calculate_confirm">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/calculate/cal_confirm_page',icon:'&#xe658;',title:'资产计量确认',id:'29'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>资产计量确认</span>
+                </a>
+              </dd>
+              <dd id="calculate_import">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/calculate/cal_import_page',icon:'&#xe658;',title:'计量数据导入',id:'30'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>计量数据导入</span>
+                </a>
+              </dd>
+              <dd id="calculate_search">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/calculate/cal_search_page',icon:'&#xe658;',title:'计量信息查询',id:'31'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>计量信息查询</span>
+                </a>
+              </dd>
+              <dd id="calculate_record">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/calculate/cal_record_page',icon:'&#xe658;',title:'计量记录查询',id:'32'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>计量记录查询</span>
+                </a>
+              </dd>
+              <dd id="calculate_update">
+                <a href="javascript:;" kit-target 
+                  data-options="{url:'/nstd/calculate/cal_update_page',icon:'&#xe658;',title:'资产计量修改',id:'33'}">
+                  <i class="layui-icon">&#xe658;</i>
+                  <span>资产计量修改</span>
+                </a>
+              </dd>
+            </dl>
+          </li>
+          {% else %}
+            {% ifequal request.session.authority.calculate True %}
+            <li class="layui-nav-item layui-nav-itemed" id="calculate">
+              <a href="javascript:;">
+                <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+                <span> 计量信息管理</span>
+              </a>
+              <dl class="layui-nav-child">
+                {% ifequal request.session.authority.calculate_confirm True %}
+                <dd id="calculate_confirm">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/calculate/cal_confirm_page',icon:'&#xe658;',title:'资产计量确认',id:'29'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产计量确认</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.calculate_import True %}
+                <dd id="calculate_import">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/calculate/cal_import_page',icon:'&#xe658;',title:'计量数据导入',id:'30'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>计量数据导入</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.calculate_search True %}
+                <dd id="calculate_search">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/calculate/cal_search_page',icon:'&#xe658;',title:'计量信息查询',id:'31'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>计量信息查询</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.calculate_record True %}
+                <dd id="calculate_record">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/calculate/cal_record_page',icon:'&#xe658;',title:'计量记录查询',id:'32'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>计量记录查询</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+                {% ifequal request.session.authority.calculate_modify True %}
+                <dd id="calculate_modify">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/calculate/cal_update_page',icon:'&#xe658;',title:'资产计量修改',id:'33'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产计量修改</span>
+                  </a>
+                </dd>
+                {% endifequal %}
+              </dl>
+            </li>
+            {% endifequal %}
+          {% endifequal %}
+          <!--
+          <li class="layui-nav-item layui-nav-itemed" id="calculate">
+              <a href="javascript:;">
+                <i class="layui-icon" aria-hidden="true" style="height: 45px;line-height: 45px">&#xe620;</i>
+                <span> 打印功能</span>
+              </a>
+              <dl class="layui-nav-child">
+                <dd id="calculate_confirm">
+                  <a href="javascript:;" kit-target 
+                    data-options="{url:'/nstd/print/asset_print_page',icon:'&#xe658;',title:'资产打印',id:'33'}">
+                    <i class="layui-icon">&#xe658;</i>
+                    <span>资产打印</span>
+                  </a>
+                </dd>
+              </dl>
+            </li>
+            -->
+        </ul>
+      </div>
+    </div>
+    <div class="layui-body" id="container">
+      <!-- 内容主体区域 -->
+      <div style="padding: 15px;">
+        <i class="layui-icon layui-anim layui-anim-rotate layui-anim-loop">&#xe63e;</i> 请稍等...
+      </div>
+    </div>
+
+    <div class="layui-footer" style="text-align: center">
+      <!-- 底部固定区域 -->
+      NSTD资产管理系统. &nbsp;信息系统部 &copy;
+    </div>
+  </div>
+  <script>
+    var message;
+    layui.config({
+      base: "{% static 'src/js/' %}",
+      version: '1.0.5'
+    }).use(['app', 'message', 'jquery'], function() {
+      var app = layui.app,
+      $ = layui.jquery,
+      layer = layui.layer;
+      //将message设置为全局以便子页面调用
+      message = layui.message;
+      //主入口
+      app.set({
+        type: 'iframe'
+      }).init();
+
+      $(function(){
+        $('li[data-target="closeAll"]').click(function(){
+          document.location.reload()
+        })
+      })
+
+      $('#pay').on('click', function() {
+        layer.open({
+          title: false,
+          type: 1,
+          content: '<img src="{% static ' + "src/images/pay.png" + ' %}" />',
+          area: ['500px', '250px'],
+          shadeClose: true
+        });
+      });
+      $('dl.skin > dd').on('click', function() {
+        var $that = $(this);
+        var skin = $that.children('a').data('skin');
+        switchSkin(skin);
+      });
+      var setSkin = function(value) {
+          layui.data('kit_skin', {
+            key: 'skin',
+            value: value
+          });
+        },
+        getSkinName = function() {
+          return layui.data('kit_skin').skin;
+        },
+        switchSkin = function(value) {
+          var _target = $('link[kit-skin]')[0];
+          _target.href = _target.href.substring(0, _target.href.lastIndexOf('/') + 1) + value + _target.href.substring(_target.href.lastIndexOf('.'));
+          setSkin(value);
+        },
+        initSkin = function() {
+          var skin = getSkinName();
+          switchSkin(skin === undefined ? 'default' : skin);
+        }();
+    });
+  </script>
+{% endblock %}

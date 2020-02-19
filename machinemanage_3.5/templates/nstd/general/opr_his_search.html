@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<!--  操作记录查询  -->
+<style>
+  .mart-8{margin-top:-8px}
+  .w100{width:100px}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>操作记录查询</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1000px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="enter_search()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline" style="margin-top: -3px">
+      <div class="layui-input-inline" style="width:100px">
+        <button class="layui-btn" onclick="history_search()">点击查询</button>
+      </div>
+
+      {% ifequal request.session.dept_name '设备购买部' %}
+      <div class="layui-input-inline" style="width:100px">
+        <button class="layui-btn layui-btn-primary layui-bg-cyan" onclick="history_export()">
+          数据导出
+        </button>
+      </div>
+      {% endifequal %}
+
+    </div>
+  </div>
+
+  <div style="padding:0 10px">
+  	<hr/>
+  </div>
+
+  <div style="padding:0 10px">
+    <table id="demo"></table>
+  </div>
+
+</div>
+
+<script>
+  var layer = ''
+  var table = ''
+  var $ = ''
+
+  var is_hidden = false
+  var authority_level = '{{request.session.authority_level}}'
+  if(authority_level != 1){
+    is_hidden = true
+  }
+
+  layui.use(['layer', 'jquery', 'table'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+  	table = layui.table
+  });
+
+  //根据资产番号查询操作历史记录
+  function history_search(){
+    let vde = vde_is_null(['a_cd'])
+    if(vde){
+      let a_cd = $('#a_cd').val()
+      table.render({
+        elem: '#demo'
+        ,url: '/nstd/general/get_history_data' //数据接口
+        ,limit: 50
+        ,page: false //开启分页
+        ,cols: [[ //表头
+          {field: 'a_cd', title: '资产番号', width:100}
+          ,{field: 'a_self_cd', title: '编号', width:100}
+          ,{field: 'a_name', title: '名称', width:230}
+
+          ,{field: 'a_type_cd', title: '型号', width:130}
+          ,{field: 'a_fuselage_cd', title: '机身号码', width:130}
+          ,{field: 'a_amount', title: '单位', width:60}
+
+          ,{field: 'a_currency', title: '币种', width:80, hide: is_hidden}
+          ,{field: 'a_price', title: '价格', width:100, hide: is_hidden}
+          ,{field: 'a_funds_type', title: '经费类别', width: 120}
+
+          ,{field: 'a_out_time', title: '出厂时间', width:120}
+          ,{field: 'a_purchase_time', title: '购入时间', width:120}
+          ,{field: 'a_brand', title: '品牌', width:80}
+
+          ,{field: 'a_supplier', title: '供应商', width:260}
+          ,{field: 'a_po_cd', title: 'PO号', width: 150}
+          ,{field: 'a_sap_cd', title: 'SAP番号', width: 150}
+
+          ,{field: 'a_project_cd', title: '工位工程', width: 120}
+          ,{field: 'a_model', title: '机种', width: 80}
+          ,{field: 'a_budget', title: '预算号', width: 120}
+
+          ,{field: 'a_referendum', title: '请示书号', width: 120}
+          ,{field: 'a_record_time', title: '记录时间', width: 180}
+          ,{field: 'a_origin_state', title: '原状态', width:80}
+          ,{field: 'a_action_state', title: '新状态', width:80}
+
+          ,{field: 'a_origin_category', title: '原折旧类别', width: 100}
+          ,{field: 'a_action_category', title: '新折旧类别', width: 100}
+          ,{field: 'a_depart', title: '所属部门', width: 120}
+          ,{field: 'a_action_type', title: '操作类型', width:130}
+
+          ,{field: 'a_origin_cd', title: '原资产号', width: 100}
+          ,{field: 'a_take_user', title: '领用人员', width: 100}
+          ,{field: 'a_back_user', title: '退库人员', width:130}
+
+          ,{field: 'a_zj_supplier', title: '支给客户', width: 120}
+          ,{field: 'a_sale_supplier', title: '销售客户', width: 120}
+
+          ,{field: 'a_take_depart', title: '领用部门', width: 120}
+          ,{field: 'a_move_depart', title: '移动部门', width: 120}
+
+          ,{field: 'a_origin_loc', title: '原位置代码', width: 130}
+          ,{field: 'a_action_loc', title: '新位置代码', width: 130}
+          
+          ,{field: 'a_action_charge', title: '确认人', width: 100}
+          ,{field: 'a_opr_user', title: '操作员', width: 100}
+          ,{field: 'a_action_remark', title: '备注信息', width: 100}
+        ]],
+        where:{
+          a_cd:a_cd
+        }
+      });
+    }
+  }
+
+  function history_export(){
+    let a_cd = $('#a_cd').val()
+    let vde = vde_is_null(['a_cd'])
+    if(vde){
+      var a = document.createElement('a')
+      var url = '/nstd/general/history_export?a_cd=' + a_cd
+      a.href = url
+      a.click()
+    }
+  }
+
+  //重置输入
+  function reset(){
+  	$('input').val('')
+  	$('#a_cd').removeAttr('readonly').focus()
+  }
+
+  //验证输入选项或选择选项是否为空
+  function vde_is_null(id_list){
+    for(let i = 0;i < id_list.length;i++){
+      id = id_list[i]
+      value = $('#' + id).val()
+      tagName = $('#' + id)[0].tagName
+      if(value == ''){
+        if(tagName == 'INPUT'){
+          $('#' + id).focus()
+          layer.tips('该选项输入不能为空!', $('#' + id), {
+            tips: [3, 'red']
+          });
+        }else{
+          layer.tips('请选择该选项!', $('#' + id).parent(), {
+            tips: [3, 'red']
+          });
+        }
+        return false
+      }
+    }
+    return true
+  }
+
+  function enter_search(){
+    let keyCode = window.event.keyCode
+    if(keyCode == 13){
+      history_search()
+    }
+  }
+
+</script>
+{% endblock %}

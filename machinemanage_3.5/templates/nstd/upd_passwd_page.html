@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+  
+  <style>
+  	.wrap{
+  		margin:0 auto;width:350px;padding:10px;margin-top:100px;
+  	}
+  </style>
+
+  <fieldset class="layui-elem-field layui-field-title atitle">
+	<legend>修改密码</legend>
+  </fieldset>
+  {% csrf_token %}
+  <div class="layui-form wrap">
+	<div class="layui-form-item">
+	  <div class="layui-inline layui-form-pane">
+	    <label class="layui-form-label">原密码:</label>
+	    <div class="layui-input-inline w120">
+	      <input id="old_passwd" type="password" autocomplete="off" class="layui-input">
+	    </div>
+	    <div class="xing">*</div>
+	  </div>
+	</div>
+
+	<div class="layui-form-item">
+	  <div class="layui-inline layui-form-pane">
+	    <label class="layui-form-label">新密码:</label>
+	    <div class="layui-input-inline w120">
+	      <input id="new_passwd" type="password" autocomplete="off" class="layui-input">
+	    </div>
+	    <div class="xing">*</div>
+	  </div>
+	</div>
+
+	<div class="layui-form-item">
+	  <div class="layui-inline layui-form-pane">
+	    <label class="layui-form-label">再输新密码:</label>
+	    <div class="layui-input-inline w120">
+	      <input id="re_new_passwd" type="password" autocomplete="off" class="layui-input">
+	    </div>
+	    <div class="xing">*</div>
+	  </div>
+	</div>
+
+	<div class="layui-form-item">
+	  <div class="layui-inline">
+	    <div class="fl h36">
+	      <button class="layui-btn" onclick="upd_passwd()">点击修改</button>
+	      <button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+	    </div>
+	  </div>
+	</div>
+  </div>
+
+  <script>
+  	var layer = ''
+  	var $ = ''
+
+  	layui.use(['jquery','layer'],function(){
+  		layer = layui.layer
+  		$ = layui.jquery
+  	})
+
+  	function upd_passwd(){
+  		let old_passwd = $('#old_passwd').val()
+  		let new_passwd = $('#new_passwd').val()
+  		let re_new_passwd = $('#re_new_passwd').val()
+  		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+  		let vde = vde_is_null(['old_passwd','new_passwd','re_new_passwd'])
+  		if(vde){
+  			if(new_passwd != re_new_passwd){
+  				layer.alert('两次新密码输入不一致!',{title:'温馨提示',icon:7})
+  			}else if(old_passwd == new_passwd){
+  				layer.alert('原密码与新密码不能相同!',{title:'温馨提示',icon:7})
+  			}else if(new_passwd.length < 6){
+  				layer.alert('密码长度不能小于6位!',{title:'温馨提示',icon:7})
+  			}else{
+  				$.ajax({
+  					url: '/nstd/upd_passwd',
+  					data: {
+  						old_passwd:old_passwd,new_passwd:new_passwd,
+  						csrfmiddlewaretoken:csrfmiddlewaretoken
+  					},
+  					type: 'post',
+  					dataType: 'json',
+  					success: function(data){
+  						if(data.result){
+  							layer.msg('密码修改成功',{icon:1})
+  							reset()
+  						}else{
+  							layer.alert(data.msg,{title:'温馨提示',icon:2})
+  						}
+  					},
+  					error: function(xmlHq,status,errorThrows){
+  						console.log(errorThrows)
+  					}
+  				})
+  			}
+  		}
+  	}
+
+  	function reset(){
+  		$('input[name!="csrfmiddlewaretoken"]').val('')
+  	}
+  	
+  </script>
+{% endblock %}

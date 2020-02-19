@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="layui-form mar-t20">
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产番号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_cd" class="layui-input" autocomplete="off" onkeyup="get_edit_base()">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产状态:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_status">
+	          <option value=''>请选择资产状态</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	          <option>F</option>
+	          <option>G</option>
+	          <option>H</option>
+	          <option>I</option>
+	          <option>J</option>
+	          <option>K</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">折旧类别:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_category">
+	          <option value="">请选择资产折旧类别</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产编号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_self_cd" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产型号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_type_cd" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产名称:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_name" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">机身号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_fuselage_cd" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">经费类别:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_funds_type" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">供应商:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_supplier" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">工程代码:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_project_cd" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">价格:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_price" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">币种:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_currency" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">位置代码:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_loc_cd" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">机种:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_model" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">请示书号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_referendum" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	</div>
+	<div class="layui-form-item">
+		<div class="layui-inline">
+	      <label class="layui-form-label">品牌:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_brand" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">单位:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_amount">
+	          <option value="">请选择单位:</option>
+	          <option>1台</option>
+	          <option>1个</option>
+	          <option>1套</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	</div>
+	<div class="layui-form-item layui-form-text">
+	    <label class="layui-form-label">备注信息:</label>
+	    <div class="layui-input-block" style="width:520px">
+	      <textarea id="a_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<label class="layui-form-label">&nbsp;</label>
+		<div class="layui-inline">
+			<button class="layui-btn marl110" onclick="edit_base()">确定修改</button>
+			<button class="layui-btn layui-btn-primary">重置输入</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	var $ = ''
+	var form = ''
+	layui.use(['jquery', 'form'], function(){
+		$ = layui.jquery;
+		form = layui.form;
+
+		form.render('select');
+	});
+
+	function get_edit_base(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			$.ajax({
+				url: '/nstd/edit/get_edit_base',
+				type: 'get',
+				data: {a_cd:a_cd},
+				dataType: 'JSON',
+				success: function(data){
+					$('#a_status').val(data.a_status)
+					$('#a_category').val(data.a_category)
+					$('#a_self_cd').val(data.a_self_cd)
+					$('#a_type_cd').val(data.a_type_cd)
+					$('#a_name').val(data.a_name)
+					$('#a_fuselage_cd').val(data.a_fuselage_cd)
+					$('#a_funds_type').val(data.a_funds_type)
+					$('#a_supplier').val(data.a_supplier)
+					$('#a_project_cd').val(data.a_project_cd)
+					$('#a_price').val(data.a_price)
+					$('#a_currency').val(data.a_currency)
+					$('#a_loc_cd').val(data.a_loc_cd)
+					$('#a_model').val(data.a_model)
+					$('#a_referendum').val(data.a_referendum)
+					$('#a_brand').val(data.a_brand)
+					$('#a_amount').val(data.a_amount)
+					$('#a_remark').val(data.a_remark)
+					form.render('select')
+				}
+			});
+		}
+	}
+
+	function edit_base(){
+		let a_cd = $('#a_cd').val()
+		let a_status = $('#a_status').val()
+		let a_category = $('#a_category').val()
+		let a_self_cd = $('#a_self_cd').val()
+		let a_type_cd = $('#a_type_cd').val()
+		let a_name = $('#a_name').val()
+		let a_fuselage_cd = $('#a_fuselage_cd').val()
+		let a_funds_type = $('#a_funds_type').val()
+		let a_supplier = $('#a_supplier').val()
+		let a_project_cd = $('#a_project_cd').val()
+		let a_price = $('#a_price').val()
+		let a_currency = $('#a_currency').val()
+		let a_loc_cd = $('#a_loc_cd').val()
+		let a_model = $('#a_model').val()
+		let a_referendum = $('#a_referendum').val()
+		let a_brand = $('#a_brand').val()
+		let a_amount = $('#a_amount').val()
+		let a_remark = $('#a_remark').val()
+		let data = {
+			a_cd:a_cd,a_status:a_status,a_category:a_category,a_self_cd:a_self_cd,a_type_cd:a_type_cd,
+			a_name:a_name,a_fuselage_cd:a_fuselage_cd,a_funds_type:a_funds_type,a_supplier:a_supplier,
+			a_project_cd:a_project_cd,a_price:a_price,a_currency:a_currency,a_loc_cd:a_loc_cd,
+			a_model:a_model,a_referendum:a_referendum,a_brand:a_brand,a_amount:a_amount,a_remark:a_remark,
+			csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+		}
+		$.ajax({
+			url: '/nstd/edit/edit_base',
+			type: 'post',
+			data: data,
+			dataType: 'JSON',
+			success: function(data){
+				if(data.result){
+					layer.msg('修改成功',{icon:1})
+					reset()
+				}
+			}
+		});
+	}
+
+	function reset(){
+		$('input[name!="csrfmiddlewaretoken"]').val('')
+		$('select').val('')
+		$('textarea').val('')
+		form.render('select')
+	}
+
+</script>
+{% endblock %}

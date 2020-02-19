@@ -1,0 +1,425 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>设备入库记账</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1025px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onchange="init_self_cd()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">编号:</label>
+      <div class="layui-input-inline">
+        <input id="a_self_cd" autocomplete="off" class="layui-input" placeholder="请输入编号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产名称:</label>
+      <div class="layui-input-inline">
+        <input id="a_name" autocomplete="off" class="layui-input" placeholder="请输入资产名称">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" autocomplete="off" class="layui-input" placeholder="请输入资产型号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号码:</label>
+      <div class="layui-input-inline">
+        <input id="a_fuselage_cd" placeholder="请输入机身号" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">单位(台,个):</label>
+      <div class="fl h36_w190">
+        <select id="a_amount" lay-search>
+          <option value="">请选择购买单位</option>
+          <option>1台</option>
+          <option>1个</option>
+          <option>1套</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+  	<div class="layui-inline">
+      <label class="layui-form-label">单价:</label>
+      <div class="layui-input-inline">
+        <input id="a_price" autocomplete="off" class="layui-input" placeholder="请输入资产单价">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">单价币种:</label>
+      <div class="fl h36_w190">
+        <select id="a_currency" lay-search>
+          <option value="">请选择单价币种</option>
+          <option value="RMB">RMB - Chinese Yuan</option>
+          <option value="USD">USD - a_amounted States Doller</option>
+          <option vlaue="HKD">HKD - Hong Kong Doller</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+      <div class="layui-inline">
+  	    <label class="layui-form-label">出厂日期:</label>
+  	    <div class="layui-input-inline">
+  	      <input id="a_out_time" autocomplete="off" class="layui-input" placeholder="请选择出厂时间">
+  	    </div>
+  	    <div class="xing">*</div>
+  	  </div>
+  </div>
+
+  <div class="layui-form-item">
+  	<div class="layui-inline">
+      <label class="layui-form-label">购入日期:</label>
+      <div class="layui-input-inline">
+        <input id="a_purchase_time" autocomplete="off" class="layui-input" placeholder="请选择购入时间">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">所属部门:</label>
+      <div class="fl h36_w190">
+        <select id="a_depart" lay-search></select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机种:</label>
+      <div class="fl h36_w190">
+        <select id="a_model" lay-search>
+          <option value="">请选择机种:</option>
+          <option>KK04</option>
+          <option>KK06</option>
+          <option>KK07</option>
+          <option>KK08</option>
+          <option selected>KK09</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">品牌:</label>
+      <div class="layui-input-inline">
+        <input id="a_brand" autocomplete="off" class="layui-input" placeholder="请输入品牌号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">折旧分类:</label>
+      <div class="fl h36_w190 my-define">
+        <input class="layui-input pad_r30" placeholder="请选择资产折旧分类" id="a_category" 
+          autocomplete="off" onkeyup="searchDown(this)" 
+          onfocus="showSlide(this)" onblur="hideSlide(this)"/>
+        <i class="icon icon1"></i>
+        <dl class="dl hid">
+          <!--<dd lay-value="1" class="dd check-this">nidec科技</dd>-->
+        </dl>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">存放位置:</label>
+      <div class="fl h36_w190">
+        <select id="a_loc_cd" lay-search></select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产状态:</label>
+      <div class="fl h36_w190">
+        <select id="a_status" lay-search>
+          <option value="">请选择存资产状态:</option>
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+          <option>D</option>
+          <option>E</option>
+          <option>F</option>
+          <option>G</option>
+          <option>H</option>
+          <option>I</option>
+          <option>J</option>
+          <option>K</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">供应商:</label>
+      <div class="fl h36_w190 my-define">
+        <input class="layui-input pad_r30" placeholder="请选择供应商" id="a_supplier" 
+          autocomplete="off" onkeyup="searchDown(this)" 
+          onfocus="showSlide(this)" onblur="hideSlide(this)"/>
+        <i class="icon icon1"></i>
+        <dl class="dl hid">
+          <!--<dd lay-value="1" class="dd check-this">nidec科技</dd>-->
+        </dl>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产类型:</label>
+      <div class="fl h36_w190">
+        <select id="a_b_nstd" lay-search>
+          <option value="">请选择资产类型</option>
+          <option>b社资产</option>
+          <option>NSTD资产</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">经费类别:</label>
+      <div class="fl h36_w190">
+        <select id="a_funds_type" lay-search>
+          <option value="">请选择经费类别</option>
+          <option>A.治具消耗类</option>
+          <option>B.治具改善类</option>
+          <option>C.外部维修类</option>
+          <option>D.设备消耗类</option>
+          <option>E.设备改善类</option>
+          <option>F.台架类</option>
+          <option>G.制造消耗类</option>
+          <option>H.制造改善类</option>
+          <option>J.开线类</option>
+          <option>K.基础设施类维修费</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">预算号:</label>
+      <div class="layui-input-inline">
+        <input id="a_budget" autocomplete="off" class="layui-input" placeholder="请输入预算号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">请示书号:</label>
+      <div class="layui-input-inline">
+        <input id="a_referendum" autocomplete="off" class="layui-input" placeholder="请输入请示书号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">PO号:</label>
+      <div class="layui-input-inline">
+        <input id="a_po_cd" autocomplete="off" class="layui-input" placeholder="请输入PO号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">SAP番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_sap_cd" autocomplete="off" class="layui-input" placeholder="请输入SAP番号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">工位代码:</label>
+      <div class="layui-input-inline">
+        <input id="a_project_cd" autocomplete="off" class="layui-input" placeholder="请输入工位(工程)代码">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item ">
+    <div class="layui-inline" style="margin-top: -55px">
+      <label class="layui-form-label">是否计量:</label>
+      <div class="fl h36_w190">
+        <select id="a_need_cal" lay-search>
+          <option value="">请选择是否需要计量</option>
+          <option value="1">需要计量</option>
+          <option value="0" selected>不需要计量</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline" style="width:640px">
+      <label class="layui-form-label">备注信息:</label>
+      <div class="layui-input-block" >
+        <textarea id="a_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <div class="layui-inline">
+        <button class="layui-btn" onclick="asset_add()">
+          <i class="layui-icon">&#xe608;</i>点击添加
+        </button>
+        <button type="reset" class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+      </div>
+      <div class="layui-inline" style="margin-left: 105px">
+        <a class="layui-btn" href="/nstd/basefunc/download_template?param=add">
+          <i class="layui-icon">&#xe601;</i>模板下载
+        </a>
+        <button type="reset" class="layui-btn" id="upload_add">
+          <i class="layui-icon">&#xe67c;</i>数据上传
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var laydate = ''
+  var upload = ''
+  var form = ''
+  var table = ''
+  var $ = ''
+  layui.use(['layedit', 'jquery', 'laydate', 'form', 'upload', 'table'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+  	layedit = layui.layedit
+  	laydate = layui.laydate
+    upload = layui.upload
+    table = layui.table
+    form = layui.form
+
+  	laydate.render({
+  	  elem: '#a_out_time', //出厂时间
+  	  value: new Date()
+  	});
+
+  	laydate.render({
+  	  elem: '#a_purchase_time',  //购买时间
+  	  value: new Date()
+  	});
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_add',
+      url: '/nstd/basefunc/upload_file',
+      data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量入库',
+            content: '/nstd/basefunc/upload_table_page?flag=add&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+    $(function(){
+      get_all_pos_data()
+      get_all_depart('a_depart')
+      reloadSlide($('#a_supplier'))
+      reloadSlide($('#a_category'))
+    });
+  });
+
+  //添加资产
+  function asset_add(){
+  	let id_list = [
+  		'a_cd','a_self_cd','a_name','a_type_cd','a_fuselage_cd','a_price','a_funds_type',
+      'a_currency','a_out_time','a_purchase_time','a_model','a_brand','a_budget',
+  		'a_supplier','a_status','a_category','a_loc_cd','a_depart','a_referendum',
+      'a_po_cd','a_sap_cd','a_amount','a_project_cd','a_need_cal','a_b_nstd'
+  	]
+  	let vde_result = vde_is_null(id_list)
+  	if(vde_result){
+  		let value_dict = get_value_list(id_list)
+  		value_dict['a_remark'] = $('#a_remark').val()
+      value_dict['csrfmiddlewaretoken'] = $('input[name="csrfmiddlewaretoken"]').val()
+	  	$.ajax({
+	  		url: '/nstd/basefunc/asset_add',
+	  		type: 'post',
+	  		data: value_dict,
+	  		dataType: 'json',
+	  		success: function(data){
+	  			if(data.result){
+	  				layer.msg('添加成功',{icon:1})
+	  				reset()
+	  			}else{
+	  				layer.msg(data.msg,{title:'温馨提示',icon:2})
+	  			}
+	  		},
+	  		error: function(xmlHq,status,errorThrow){
+	  			console.log(errorThrow)
+	  		}
+	  	});
+  	}
+  }
+
+  //根据资产番号生成资产编号
+  function init_self_cd(){
+    let a_cd = $('#a_cd').val()
+    if(a_cd != ''){
+      $('#a_self_cd').val('A'+a_cd)
+    }
+  }
+
+  //根据ID列表获取所有Id->value键值对
+  function get_value_list(id_list){
+  	let value_dict = {}
+  	for(let i=0;i<id_list.length;i++){
+  		key = id_list[i]
+  		value = $('#' + key).val()
+  		value_dict[key] = value
+  	}
+  	return value_dict
+  }
+
+  //重置输入
+  function reset(){
+  	$('input[id!="a_amount"]').val('')
+    $('textarea[id="a_remark"]').val('')
+  }
+</script>
+{% endblock %}

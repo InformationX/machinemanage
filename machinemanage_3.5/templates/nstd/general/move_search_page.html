@@ -1,0 +1,210 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .v_hid{visibility: hidden}
+</style>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>在线移动信息查询</legend>
+</fieldset>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <label class="layui-form-label">资产番号:</label>
+    <div class="layui-input-inline">
+      <input id="a_cd" placeholder="请输入资产番号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing v_hid">*</div>
+  </div>
+  <div class="layui-inline">
+    <label class="layui-form-label">起始日期:</label>
+    <div class="layui-input-inline">
+      <input id="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+  <div class="layui-inline">
+    <label class="layui-form-label">结束日期:</label>
+    <div class="layui-input-inline">
+      <input id="endDate" placeholder="终止日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+</div>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <div class="mar-l110" style="min-height: 45px;">
+      <button class="layui-btn" onclick="get_move_data()" style="width:190px">点击查询</button>
+    </div>
+  </div>
+  <div class="layui-inline">
+    <div class="marl110" style="min-height: 45px;">
+      <button class="layui-btn" onclick="export_move_data()" style="width:190px">下载数据</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 10px">
+	<table id="demo"></table>
+</div>
+
+
+<script>
+var table = ''
+var laydate = ''
+var $ = ''
+var layer = ''
+var tableIns = ''
+
+var is_hidden = false
+var authority_level = '{{request.session.authority_level}}'
+var dept_name = '{{request.session.dept_name}}'
+if(authority_level != 1 && dept_name != '设备购买部'){
+  is_hidden = true
+}
+
+layui.use(['table','jquery','laydate', 'layer'], function(){
+  table = layui.table;
+  laydate = layui.laydate
+  $ = layui.jquery
+  layer = layui.layer
+
+  let startDate = one_month_ago()
+  let endDate = getToday()
+
+  laydate.render({
+    elem: '#startDate',
+    value: startDate
+  });
+
+  laydate.render({
+    elem: '#endDate',
+    value: endDate
+  });
+});
+
+function get_move_data(){
+  /*
+	let beginDate = $('#beginDate').val()
+	let endDate = $('#endDate').val()
+	let a_cd = $('#a_cd').val()
+	let a_self_cd = $('#a_self_cd').val()
+	let a_type_cd = $('#a_type_cd').val()
+	let data = {
+		beginDate:beginDate,endDate:endDate,a_cd:a_cd,a_self_cd:a_self_cd,a_type_cd:a_type_cd
+	}
+	tableIns.reload({
+		where: data,
+	})
+  */
+  a_cd = $('#a_cd').val()
+  startDate = $('#startDate').val()
+  endDate = $('#endDate').val()
+
+  tableIns = table.render({
+    elem: '#demo'
+    ,url: '/nstd/general/get_move_data' //数据接口
+    ,limit: 50
+    ,page: true //开启分页
+    ,cols: [[ //表头
+      {field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_self_cd', title: '编号', width:100}
+      ,{field: 'a_name', title: '名称', width:230}
+
+      ,{field: 'a_type_cd', title: '型号', width:130}
+      ,{field: 'a_fuselage_cd', title: '机身号码', width:130}
+      ,{field: 'a_amount', title: '单位', width:60}
+
+      ,{field: 'a_price', title: '单价', width:100, hide: is_hidden}
+      ,{field: 'a_currency', title: '币种', width:80, hide: is_hidden}
+      ,{field: 'a_out_time', title: '出厂时间', width:120}
+
+      ,{field: 'a_purchase_time', title: '购入时间', width:120}
+      ,{field: 'a_brand', title: '品牌', width:80}
+      ,{field: 'a_supplier', title: '供应商', width:260}
+
+      ,{field: 'a_action_state', title: '状态', width:130}
+      ,{field: 'a_origin_loc', title: '原位置代码', width: 120}
+      ,{field: 'a_action_loc', title: '新位置代码', width: 130}
+
+      ,{field: 'a_action_user', title: '领用人员', width: 100}
+      ,{field: 'a_record_time', title: '记录时间', width: 180}
+      ,{field: 'a_opr_user', title: '操作员', width: 120}
+
+      ,{field: 'a_model', title: '机种', width: 80}
+      ,{field: 'a_budget', title: '预算号', width: 120}
+      ,{field: 'a_referendum', title: '请示书号', width: 120}
+
+      ,{field: 'a_po_cd', title: 'PO号', width: 150}
+      ,{field: 'a_sap_cd', title: 'SAP番号', width: 150}
+      ,{field: 'a_project_cd', title: '工位工程', width: 120}
+
+      ,{field: 'a_funds_type', title: '经费类别', width: 120}
+      ,{field: 'a_action_charge', title: '主管确认', width: 100}
+      ,{field: 'a_action_remark', title: '备注信息', width: 100}
+    ]],
+    where:{
+      a_cd: a_cd, startDate: startDate, endDate: endDate
+    }
+  });
+}
+
+//移动数据导出
+function export_move_data(){
+  let a_cd = $('#a_cd').val()
+  let startDate = $('#startDate').val()
+  let endDate = $('#endDate').val()
+
+  var a = document.createElement('a')
+  var url = `/nstd/general/move_export?a_cd=${a_cd}&startDate=${startDate}&endDate=${endDate}`
+  a.href = url
+  a.click()
+}
+
+//获取一个月以前的日期
+function one_month_ago(){
+  let date = new Date()
+  date.setMonth(date.getMonth()-1)
+  let year = date.getFullYear()
+  let month = date.getMonth() + 1
+  let day = date.getDate()
+  if(month < 10){
+    month = '0' + month
+  }
+  if(day < 10){
+    day = '0' + day
+  }
+  return year + '-' + month + '-' + day
+}
+
+//获取今天日期
+function getToday(){
+  let date = new Date()
+  let year = date.getFullYear()
+  let month = date.getMonth() + 1
+  let day = date.getDate()
+  let hours = date.getHours()
+  let minutes = date.getMinutes()
+  let seconds = date.getSeconds()
+  if(month < 10){
+    month = '0' + month
+  }
+  if(day < 10){
+    day = '0' + day
+  }
+  if(hours < 10){
+    hours = '0' + hours
+  }
+  if(minutes < 10){
+    minutes = '0' + minutes
+  }
+  if(seconds < 10){
+    seconds = '0' + seconds
+  }
+  //return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+  return year + '-' + month + '-' + day
+}
+
+</script>
+{% endblock %}

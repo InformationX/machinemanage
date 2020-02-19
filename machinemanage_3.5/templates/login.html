@@ -1,0 +1,118 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="ZH-cn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Login</title>
+  <link rel="stylesheet" href="{% static 'plugins/layui/css/layui.css' %}">
+  <link rel="stylesheet" href="{% static 'src/css/login.css' %}">
+  <style>
+    .cred {color:red}
+  </style>
+</head>
+
+<body>
+  <div class="kit-login">
+    <div class="kit-login-bg"></div>
+    <div class="kit-login-wapper">
+      <h2 class="kit-login-slogan">欢迎使用 <br> NSTD资产管理系统</h2>
+      <div class="kit-login-form">
+        <h4 class="kit-login-title">用户登录</h4>
+        <form class="layui-form" method="post" action="/b/login/" id="form">
+          {% csrf_token %}
+          <div class="kit-login-row">
+            <div class="kit-login-col">
+              <i class="layui-icon">&#xe612;</i>
+              <span class="kit-login-input">
+                <input name="u_id" lay-verify="required"  placeholder="请输入工号" autocomplete="off" />
+              </span>
+              <span class="cred">*</span>
+            </div>
+            <div class="kit-login-col"></div>
+          </div>
+          <div class="kit-login-row">
+            <div class="kit-login-col">
+              <i class="layui-icon">&#xe64c;</i>
+              <span class="kit-login-input">
+                <input type="password" name="u_passwd" lay-verify="required" placeholder="请输入密码" />
+              </span>
+              <span class="cred">*</span>
+            </div>
+            <div class="kit-login-col"></div>
+          </div>
+          <div class="kit-login-row" style="margin-bottom:0;">
+            <div class="kit-login-row">
+              <div class="layui-input-block" style="margin-left: 0" lay-filter="login_filter">
+                <input type="radio" name="login_type" value="apple" title="B社" checked="">
+                <input type="radio" name="login_type" value="nstd" title="NSTD">
+              </div>
+            </div>
+          </div>
+          <div class="kit-login-row">
+            <button class="layui-btn kit-login-btn" lay-submit="submit" lay-filter="login_hash">登录</button>
+          </div>
+          <a href="javascript:;" style="color: rgb(153, 153, 153); text-decoration: none; font-size: 13px;" id="forgot">忘记密码</a>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="{% static 'plugins/polyfill.min.js' %}"></script>
+  <script src="{% static 'plugins/layui/layui.js' %}"></script>
+  <script>
+    layui.use(['layer', 'form', 'jquery'], function() {
+      var form = layui.form
+      var $ = layui.jquery
+
+      //监听B社和NSTD单选框切换
+      /*
+      form.on('radio()', function(data){
+        let apple_nstd = data.value //被点击的radio的value值
+        if(apple_nstd == 'apple'){
+          $('#form').attr('action','/b/login/')
+        }else{
+          $('#form').attr('action','/nstd/login')
+        }
+      });
+      */
+
+      //监听提交
+      form.on('submit(login_hash)', function(data) {
+        //layer.msg(JSON.stringify(data.field));
+        let u_id = $('input[name="u_id"]').val()
+        let u_passwd = $('input[name="u_passwd"]').val()
+        let login_type = $('input[name="login_type"]:checked').val()
+        let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+
+        if(login_type == 'nstd'){
+          layer.msg('该功能开发中，敬请期待...',{icon:6})
+          url = '/nstd/login/'
+          return false
+        }else{
+          url = '/b/login/'
+        }
+        
+        $.ajax({
+          url: url,
+          type: 'post',
+          dataType: 'json',
+          data: {u_id:u_id,u_passwd:u_passwd,csrfmiddlewaretoken:csrfmiddlewaretoken},
+          success:function(data){
+            if(data.result){
+              location.href = '/b'
+            }else{
+              layer.msg(data.msg,{'icon':2})
+            }
+          },
+          error:function(xmlH1,status,errorThrows){
+            console.log(errorThrows)
+          }
+        })
+        return false
+      });
+    });
+  </script>
+</body>
+</html>

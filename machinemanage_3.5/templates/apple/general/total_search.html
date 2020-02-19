@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>总账信息查询</legend>
+</fieldset>
+
+<div style="padding-left:40px">
+  <div class="layui-row">
+    <div class="layui-col-md2 type">
+        <div class="title">在库</div>
+        <div class="content">{{instorage}}</div>
+    </div>
+    <div class="layui-col-md2 type marl10">
+        <div class="title">支给</div>
+        <div class="content">{{zj}}</div>
+    </div>
+    <div class="layui-col-md2 type marl10">
+        <div class="title">出库</div>
+        <div class="content">{{out}}</div>
+    </div>
+    <div class="layui-col-md2 type marl10">
+        <div class="title">已报废</div>
+        <div class="content">0</div>
+    </div>
+  </div>
+
+  <div class="layui-form mart30">
+    <div class="layui-form-item">
+      <div class="layui-inline">
+        <label class="layui-form-label">起始日期:</label>
+        <div class="layui-input-block">
+          <input id="startDate" placeholder="请选择起始日期" autocomplete="off" class="layui-input">
+        </div>
+      </div>
+      <div class="layui-inline">
+        <label class="layui-form-label">结束日期:</label>
+        <div class="layui-input-block">
+          <input id="endDate" placeholder="请选择结束日期" autocomplete="off" class="layui-input">
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="layui-form-item mart30 marl30">
+  <div class="layui-inline">
+    <div class="marl10 m_h45">
+      <button class="layui-btn w190" onclick="total_export()">数据导出</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var $ = ''
+var layer = ''
+layui.use(['table','jquery','laydate', 'layer'], function(){
+  table = layui.table;
+  $ = layui.jquery
+  layer = layui.layer
+  laydate = layui.laydate
+
+  laydate.render({
+    elem: '#startDate',
+    type: 'date'
+  });
+
+  laydate.render({
+    elem: '#endDate',
+    type: 'date'
+  });
+
+});
+
+//导出添加数据
+function total_export(){
+  var startDate = $('#startDate').val()
+  var endDate = $('#endDate').val()
+  var a = document.createElement('a')
+  var url = `/b/general/total_export?startDate=${startDate}&endDate=${endDate}`
+  a.href = url
+  a.click()
+}
+
+</script>
+{% endblock %}

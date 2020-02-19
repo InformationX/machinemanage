@@ -1,0 +1,591 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<style>
+  .v-hid{visibility: hidden}
+  .mart-8{margin-top:-8px}
+  .bg-pink{background-color: pink !important}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>PD内部移动(在线移动)</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1500px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">领用人员:</label>
+      <div class="fl h36_w190 my-define">
+        <input class="layui-input pad_r30" placeholder="请选择领用人员" id="a_action_user" 
+          autocomplete="off"/> 
+        <i class="icon icon1"></i>
+        <dl class="dl hid"></dl>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主管确认:</label>
+      <div class="fl h36_w190 my-define">
+        <input class="layui-input pad_r30" placeholder="请选择领用人员" id="a_action_charge" 
+          autocomplete="off"/>
+        <i class="icon icon1"></i>
+        <dl class="dl hid"></dl>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 10px">
+  	<table class="layui-table" lay-even lay-size="sm" lay-skin="line border">
+  	  <colgroup>
+    		<col width="180">
+        <col>
+        <col>
+  		  <col>
+        <col>
+        <col>
+        <col>
+        <col width="160">
+        <col width="160">
+        <col width="160">
+        <col width="60">
+  	  </colgroup>
+  	  <thead>
+        <tr>
+          <th>资产编号</th>
+          <th>型号</th>
+          <th>名称</th>
+          <th>资产状态</th>
+          <th>库存状态</th>
+          <th>所属部门</th>
+          <th>原位置</th>
+          <th>移动部门</th>
+          <th>使用机种</th>
+          <th>新位置</th>
+          <td>操作</td>
+        </tr>
+  	  </thead>
+  	  <tbody>
+        <tr>
+          <td>
+            <input type="hidden" name="a_action_state"/>
+            <input type="hidden" name="a_action_category">
+            <input type="hidden" name="a_material_id"/>
+            <input class="layui-input" autocomplete="off" placeholder="请输入资产编号" name="a_cd" onkeyup="enter_click(this)">
+          </td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td>
+            <div class="layui-inline">
+              <div class="layui-input-inline">
+                <input id="a_action_depart" autocomplete="off" class="layui-input" placeholder="请输入移动部门">
+              </div>
+            </div>
+          </td>
+          <td>
+            <select>
+              <option value=''>请选择机种</option>
+              <option>KK04</option>
+              <option>KK06</option>
+              <option>KK07</option>
+              <option>KK08</option>
+              <option>KK09</option>
+              <option>KK10</option>
+              <option>KK13</option>
+            </select>
+          </td>
+          <td>
+            <div class="layui-inline">
+              <div class="layui-input-inline">
+                <input id="a_action_loc" autocomplete="off" class="layui-input" placeholder="请输入移动位置">
+              </div>
+            </div>
+          </td>
+          <td>
+            <button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delRow(this)">删除</button>
+          </td>
+        </tr>
+  	  </tbody>
+  	</table>
+  	<div class="layui-form-item mart20">
+  	  <div class="layui-inline">
+  		  <button class="layui-btn" onclick="asset_online_move()">确定移动</button>
+  		  <button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+  	  </div>
+      <div class="layui-inline" style="margin-left: 100px">
+        <a class="layui-btn" href="/nstd/basefunc/download_template?param=online_move">
+          <i class="layui-icon">&#xe601;</i>模板下载
+        </a>
+        <button class="layui-btn layui-btn-primary layui-bg-cyan" id="upload_move">
+          <i class="layui-icon">&#xe67c;</i>数据上传
+        </button>
+      </div>
+  	</div>
+  </div>
+
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var form = ''
+  var $ = ''
+  layui.use(['layedit', 'jquery', 'form', 'upload'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+  	upload = layui.upload
+    form = layui.form
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_move',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量移动',
+            content: '/nstd/basefunc/upload_table_page?flag=online_move&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+  	$(function(){
+      //reloadSlide($('#a_action_user'))  //加载领用人员下拉框
+      //reloadSlide($('#a_action_charge'))//加载确认主管下拉框
+
+  	});
+  });
+
+  //回车后根据资产编号差详情
+  function enter_click(obj){
+  	let keyCode = window.event.keyCode
+  	if(keyCode == 13){
+  		let a_cd = $(obj).val()
+  		if(a_cd == ''){
+  			layer.tips('该选项输入值不能为空!', $(obj), {
+          tips: [3, 'red']
+	      });
+  		}else{
+  			isRepeat = vde_is_repeat(obj)
+  			if(!isRepeat){
+  				$.ajax({
+	  				url: '/nstd/basefunc/asset_move_detail',
+	  				data: {a_cd:a_cd},
+	  				type: 'get',
+	  				dataType: 'json',
+	  				success: function(data){
+	  					if(data.result){
+	  						let tr = $(obj).parent().parent()
+                $(tr).find('td:eq(0)').find('input[name="a_material_id"]').val(data.a_material_id)
+                $(tr).find('td:eq(0)').find('input[name="a_action_state"]').val(data.a_action_state)
+                $(tr).find('td:eq(0)').find('input[name="a_action_category"]').val(data.a_action_category)
+                $(tr).find('td:eq(1)').text(data.a_type_cd)
+	  						$(tr).find('td:eq(2)').text(data.a_name)
+                $(tr).find('td:eq(3)').text(data.a_action_state)
+
+                let action_type = ''
+                if(data.a_action_type == 0 || data.a_action_type == 2 || data.a_action_type == 4){
+                  action_type = '在库'
+                }else if(data.a_action_type == 1){
+                  action_type = '支给'
+                }else if(data.a_action_type == 3){
+                  action_type = '已归还供应商'
+                }else if(data.a_action_type == 5){
+                  action_type = '出库'
+                }else if(data.a_action_type == 6){
+                  action_type = '销售'
+                }else if(data.a_action_type == 7){
+                  action_type = '报废'
+                }else if(data.a_action_type == 8){
+                  action_type = '在线移动'
+                }else if(data.a_action_type == 9){
+                  action_type = '库房移动'
+                }
+                $(tr).find('td:eq(4)').text(action_type)
+
+	  					  if(data.a_depart != null){
+                  $(tr).find('td:eq(5)').text(data.a_depart)
+                }
+                if(data.a_action_loc != null){
+                  $(tr).find('td:eq(6)').text(data.a_action_loc)
+                }
+                $(obj).attr('readonly','')
+
+                $('tbody').append(get_line_str())
+                form.render('select')
+                $('tbody tr:last td:first input').focus()
+	  					}else{
+	  						layer.alert(data.msg,{title:'温馨提示',icon:5})
+	  						$(obj).parent().siblings().each(function(){
+	  							$(this).text('')
+	  						})
+	  					}
+	  				},
+	  				error: function(xmlHq,status,errorThrows){
+	  					console.log(errorThrows)
+	  				}
+	  			})
+  			}
+  		}
+  	}
+  }
+
+  //资产批量移动
+  function asset_online_move(){
+    if(!vde_is_in_storage()){
+      return
+    }
+  	let data = {}
+  	let asset_list = []
+  	$('tbody tr').each(function(){
+  		let a_material_id = $(this).find('td:eq(0)').find('input[name="a_material_id"]').val()
+      let a_origin_loc = $(this).find('td:eq(6)').text()
+  		if(a_material_id != ''){
+  			asset_list.push({
+	  			a_origin_loc:a_origin_loc,a_material_id:a_material_id
+	  		})
+  		}
+  	})
+  	data['asset_list'] = JSON.stringify(asset_list)
+  	if(asset_list.length == 0){
+  		layer.alert('没有可移动操作数据',{title:'温馨提示',icon:5})
+  	}else{
+  		let vde = vde_is_null(['a_action_user','a_action_charge'])
+  		if(vde){
+        if(vde_pos_loc()){
+  			  data['a_action_user'] = $('#a_action_user').val()		  //领用人员
+  			  data['a_action_charge'] = $('#a_action_charge').val()	//主管确认
+          data['a_action_type'] = 8                             //在线移动
+          asset_list = []
+          $('tbody').find('tr').each(function(){
+            let a_material_id = $(this).find('td:first > input[name="a_material_id"]').val()
+            if(a_material_id != ''){
+              let a_cd = $(this).find('td:eq(0) > input[name="a_cd"]').val()
+              let a_action_state = $(this).find('td:eq(3)').text()
+              let a_action_category = $(this).find('td:eq(0)').find('input[name="a_action_category"]').val()
+              let a_origin_depart = $(this).find('td:eq(5)').text()
+              let a_action_depart = $(this).find('td:eq(7)').find('input').val()
+              let a_origin_loc = $(this).find('td:eq(6)').text()
+              let a_action_model = $(this).find('td:eq(8) select').val()
+              let a_action_loc = $(this).find('td:eq(9)').find('input').val()
+              asset_list.push({
+                a_material_id:a_material_id,a_action_state:a_action_state,
+                a_action_category:a_action_category,a_origin_depart:a_origin_depart,
+                a_action_depart:a_action_depart,a_origin_loc:a_origin_loc,
+                a_action_loc:a_action_loc,a_cd:a_cd,a_action_model:a_action_model
+              })
+            }
+          })
+          data['asset_list'] = JSON.stringify(asset_list)
+  	  		$.ajax({
+  	  			url: '/nstd/basefunc/asset_move',
+  	  			type: 'get',
+  	  			data: data,
+  	  			dataType: 'json',
+  	  			success: function(data){
+  	  				if(data.result){
+  	  					layer.msg('操作成功',{icon:1})
+                reset()
+  	  				}else{
+  	  					layer.msg(data.msg,{title:'温馨提示',icon:2})
+  	  				}
+  	  			},
+  	  			error: function(xmlHq,status,errorThrows){
+  	  				console.log(errorThrows)
+  	  			}
+  	  		});
+        }
+  		}
+  	}
+  }
+
+  //验证资产状态是否在线（已出库）
+  function vde_is_in_storage(){
+    var flag = true
+    $('tbody').find('tr').each(function(){
+      let state = $(this).find('td:eq(4)').text()
+      if(state != '' && state != '出库' && state != '在线移动'){
+        let a_cd = $(this).find('td:first > input[name="a_cd"]').val()
+        layer.tips('该资产不处于在线状态(即出库)，不能移动!', $(this).find('td:eq(4)'), {
+          tips: [3, 'red']
+        });
+        flag = false
+        return false
+      }
+    });
+    return flag
+  }
+
+  //验证资产编号输入是否重复
+  function vde_is_repeat(obj){
+  	let a_cd = $(obj).val()
+  	let a_cd_list = []
+  	$(obj).parent().parent().siblings().each(function(){
+  		let value = $(this).find('td:first > input[name="a_cd"]').val()
+  		a_cd_list.push(value)
+  	});
+  	let flag = false
+  	for(let i=0;i<a_cd_list.length;i++){
+  		if(a_cd == a_cd_list[i]){
+  			flag = true
+  			break
+  		}
+  	}
+  	if(flag){
+  		layer.tips('该选项输入值重复!', $(obj), {
+	      tips: [3, 'red']
+	    });
+  	}
+  	return flag
+  }
+
+  //验证移动部门和新位置是否已经选择
+  function vde_pos_loc(){
+    var flag = true
+    $('tbody tr').each(function(){
+      let a_material_id = $(this).find('td:first input[name="a_material_id"]').val()
+      let td_depart = $(this).find('td:eq(7)')
+      let td_action_model = $(this).find('td:eq(8)')
+      let td_location = $(this).find('td:eq(9)')
+      if(a_material_id != ''){
+        if($(td_depart).find('input').val() == ''){
+          layer.tips('该选项输入不能为空！', $(td_depart),{
+            tips: [3, 'red']
+          })
+          flag = false
+          return false
+        }else if($(td_action_model).find('select').val() == ''){
+          layer.tips('该选项输入不能为空!', $(td_action_model),{
+            tips: [3, 'red']
+          })
+          flag = false
+          return false
+        }else if($(td_location).find('input').val() == ''){
+          layer.tips('该选项输入不能为空!', $(td_location),{
+            tips: [3, 'red']
+          })
+          flag = false
+          return false
+        }
+      }
+    })
+    return flag
+  }
+
+  //重置输入
+  function reset(){
+  	$('input').val('')
+	  $('tbody').html(get_line_str())
+    form.render('select')
+  }
+
+  //最新添加一行字符串
+  function get_line_str(){
+    str = '<tr>' +
+            '<td>' +
+              '<input type="hidden" name="a_action_state"/>' +
+              '<input type="hidden" name="a_action_category"/>' +
+              '<input type="hidden" name="a_material_id"/>' +
+              '<input class="layui-input" autocomplete="off" placeholder="请输入资产编号" name="a_cd" onkeyup="enter_click(this)">' +
+            '</td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td></td>' +
+            '<td class="w190">' +
+              '<div class="layui-inline">' +
+                '<div class="layui-input-inline">' +
+                  '<input id="a_action_depart" autocomplete="off" class="layui-input" placeholder="请输入移动部门">' +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td class="w190">' +
+              '<select>' +
+                '<option value="">请选择机种</option>' +
+                '<option>KK04</option>' +
+                '<option>KK06</option>' +
+                '<option>KK07</option>' +
+                '<option>KK08</option>' +
+                '<option>KK09</option>' +
+                '<option>KK10</option>' +
+                '<option>KK13</option>' +
+              '</select>' +
+            '</td>' +
+            '<td class="w190">' +
+              '<div class="layui-inline">' + 
+                '<div class="layui-input-inline">' +
+                  '<input id="a_action_loc" autocomplete="off" class="layui-input" placeholder="请输入移动位置">' +
+                '</div>' +
+              '</div>' +
+            '</td>' +
+            '<td>' +
+              '<button class="layui-btn layui-btn-danger layui-btn-sm" onclick="delRow(this)">删除</button>' +
+            '</td>' +
+          '</tr>'
+    return str
+  }
+
+  //加载每一行移动部门数据
+  function reloadDepart(){
+    let url = '/nstd/baseinfo/search_depart'
+    let str = ''
+    $.ajax({
+      url: url,
+      type: 'get',
+      async: false,
+      dataType: 'json',
+      success: function(data){
+        data_list = data.data_list
+        for(let i=0;i<data_list.length;i++){
+          let id = data_list[i].id
+          let name = data_list[i].name
+          str += '<dd lay-value="'+ id +'" class="dd" onmouseover="dd_mouseover(this)" onmouseout="dd_mouseout(this)" onclick="dd_click(this)">'+ name +'</dd>'
+        }
+      }
+    })
+    $('tbody tr').each(function(){
+      let obj_depart = $(this).find('td:eq(7)').find('input')
+      $(obj_depart).next().next().html(str)
+    })
+  }
+
+  //加载每一行移动位置数据
+  function reloadLocation(){
+    let url = '/nstd/baseinfo/search_pos'
+    let str = ''
+    $.ajax({
+      url: url,
+      type: 'get',
+      async: false,
+      data: {pos_type: 'online'},
+      dataType: 'json',
+      success: function(data){
+        data_list = data.data_list
+        for(let i=0;i<data_list.length;i++){
+          let id = data_list[i].id
+          let name = data_list[i].name
+          str += '<dd lay-value="'+ id +'" class="dd" onmouseover="dd_mouseover(this)" onmouseout="dd_mouseout(this)" onclick="dd_click(this)">'+ name +'</dd>'
+        }
+      }
+    })
+    $('tbody tr').each(function(){
+      let obj_location = $(this).find('td:eq(9)').find('input')
+      $(obj_location).next().next().html(str)
+    })
+  }
+
+  //移动位置触发Enter事件
+  function addNewLine(obj){
+    let keyCode = window.event.keyCode
+    let obj_val = $(obj).val().trim()
+    if(keyCode == 13){
+      if(obj_val != ''){
+        $(obj).parent().parent().parent().next().find('td:eq(9) input').focus()        
+      }else{
+        layer.alert('位置输入不能为空!',{title:'温馨提示',icon:7})
+      }
+    }else{
+      //根据输入数据进行搜索匹配
+      if(obj_val != ''){
+        $(obj).next().next().find('dd').each(function(){
+          if($(this).text().indexOf(obj_val) == -1){
+            $(this).addClass('hid')
+          }else{
+            $(this).removeClass('hid')
+          }
+        })
+      }else{
+        $(obj).next().next().find('dd').each(function(){
+          if($(this).hasClass('hid')){
+            $(this).removeClass('hid')
+          }
+        })
+      }
+    }
+  }
+
+  //显示隐藏下拉框
+  function showCurSlide(obj){
+    let classArray = $(obj).attr('class').split(' ')
+    let classLen = classArray.length
+    let className = classArray[classLen - 1]
+    if(className == 'a_action_depart'){
+      reloadDepart()
+    }else if(className == 'a_action_loc'){
+      reloadLocation()
+    }
+    $(obj).next().removeClass('icon1').addClass('icon2')
+    $(obj).next().next().removeClass('hid')
+  }
+
+  //删除所选行
+  function delRow(obj){
+    let obj_tr = $(obj).parent().parent()
+    $(obj_tr).addClass('bg-pink')
+    layer.confirm('您确定要删除该行吗？',
+    {
+      title:'温馨提示',icon:3,btn:['确定删除','取消操作'],
+      cancel:function(){
+        $(obj_tr).removeClass('bg-pink')
+      }
+    },function(index){
+      $(obj_tr).remove()
+      layer.close(index)
+    },function(index){
+      $(obj_tr).removeClass('bg-pink')
+      layer.close(index)
+    })
+  }
+
+</script>
+
+<script>
+//验证输入选项或选择选项是否为空
+function vde_is_null(id_list){
+  for(let i = 0;i < id_list.length;i++){
+    id = id_list[i]
+    value = $('#' + id).val()
+    tagName = $('#' + id)[0].tagName
+    if(value == ''){
+      if(tagName == 'INPUT'){
+        $('#' + id).focus()
+        layer.tips('该选项输入不能为空!', $('#' + id), {
+          tips: [3, 'red']
+        });
+      }else{
+        layer.tips('请选择该选项!', $('#' + id).parent(), {
+          tips: [3, 'red']
+        });
+      }
+      return false
+    }
+  }
+  return true
+}
+</script>
+
+{% endblock %}

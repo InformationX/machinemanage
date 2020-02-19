@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+ <fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>历史记录查询</legend>
+</fieldset>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <label class="layui-form-label">资产番号:</label>
+    <div class="layui-input-inline">
+      <input id="a_cd" placeholder="请输入资产番号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+  <div class="layui-inline">
+    <div style="margin-left: 0;min-height: 45px">
+      <button class="layui-btn" onclick="reloadData()">点击查询</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 10px">
+	<table id="demo"></table>
+</div>
+
+<script>
+var table = ''
+var laydate = ''
+var $ = ''
+
+layui.use(['table','jquery','laydate'], function(){
+  table = layui.table;
+  laydate = layui.laydate
+  $ = layui.jquery
+
+});
+
+function reloadData(){
+  let a_cd = $('#a_cd').val()
+  if(a_cd == ''){
+    layer.alert('资产番号不能为空!',{icon:7,offset:'100px'})
+    return
+  }
+  table.render({
+    elem: '#demo'
+    ,height: 'auto'
+    ,url: '/b/general/get_history_data' //数据接口
+    ,page: false //开启分页
+    ,cols: [[ //表头
+      {type: 'numbers', title: '序号', width:100}
+      ,{field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_type_cd', title: '型号', width:100}
+      ,{field: 'a_main_cd', title: '主体资产番号', width:150} 
+      ,{field: 'a_main_serial', title: '主体序列号', width: 150}
+      ,{field: 'a_origin_loc', title: '原始位置', width: 130}
+      ,{field: 'a_action_loc', title: '退库位置', width: 130}
+      ,{field: 'a_action_state', title: '状态', width: 80}
+      ,{field: 'a_action_type', title: '动作类型', width: 100}
+      ,{field: 'a_confirm_user', title: '主管确认', width: 100}
+      ,{field: 'a_action_remark', title: '备注', width: 150}
+      ,{field: 'a_opr_user', title: '操作员', width: 80}
+      ,{field: 'a_add_time', title: '操作时间', width: 170}
+    ]]
+    ,where: {
+      a_cd:a_cd
+    }
+  });
+}
+
+</script>
+{% endblock %}

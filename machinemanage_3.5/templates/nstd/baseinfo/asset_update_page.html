@@ -1,0 +1,392 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产信息修改</legend>
+</fieldset>
+
+<div class="layui-btn-container" style="margin: 0 40px 20px 40px">
+  <table>
+    <tr>
+      <td class="pad-t10">
+        <button class="layui-btn" onclick="edit_base_page()">资产录入</button>
+        <button class="layui-btn" onclick="edit_out_page()">设备出库</button>
+        <button class="layui-btn" onclick="edit_back_page()">设备退库</button>
+        <button class="layui-btn" onclick="edit_zj_page()">支给设备</button><br/>
+        <button class="layui-btn" onclick="edit_zj_back_page()">支给归还</button>
+        <button class="layui-btn" onclick="edit_loan_back_page()">借用归还</button>
+        <button class="layui-btn" onclick="edit_storage_move_page()">库房移动</button>
+        <button class="layui-btn" onclick="edit_online_move_page()">在线移动</button>
+      </td>
+      <td style="background:#e6e6e6;width:2px"></td>
+      <td class="pad-t10 pad-l10">
+        <button class="layui-btn" onclick="edit_pos_page()">位置代码</button>
+        <button class="layui-btn" onclick="edit_state_page()">资产状态</button>
+        <button class="layui-btn" onclick="edit_depart_page()">当前部门</button>
+        <!--
+        <button class="layui-btn" onclick="edit_category_page()">折旧类别</button>
+        -->
+      </td>
+    </tr>
+  </table>
+</div>
+
+<div class="layui-form mart10" style="min-width: 1025px">
+  <div class="bgf2f pad20">
+    <div class="layui-row layui-col-space15">
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">修改当前部门、资产位置、使用机种、备注</div>
+          <div class="layui-card-body">
+            <div style="margin:15px 0">
+              <div class="layui-inline" style="margin-left: 160px">
+                <a class="layui-btn" href="/nstd/basefunc/download_template?param=asset_modify_1"> 
+                  <i class="layui-icon">&#xe601;</i>模板下载
+                </a>
+              </div>
+              <div class="layui-inline">
+                <button class="layui-btn" id="upload_modify_1">
+                  <i class="layui-icon">&#xe67c;</i>上传数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="layui-col-md6" style="visibility: hidden">
+        <div class="layui-card">
+          <div class="layui-card-header">资产冲销（按资产号删除资产）。</div>
+          <div class="layui-card-body">
+            <div style="margin:15px 0">
+              <div class="layui-inline" style="margin-left: 160px">
+                <a class="layui-btn" href="/nstd/basefunc/download_template?param=asset_modify_2">
+                  <i class="layui-icon">&#xe601;</i>模板下载
+                </a>
+              </div>
+              <div class="layui-inline">
+                <button class="layui-btn" id="upload_modify_2">
+                  <i class="layui-icon">&#xe67c;</i>上传数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">修改资产单价、币种。</div>
+          <div class="layui-card-body">
+            <div style="margin:15px 0">
+              <div class="layui-inline" style="margin-left: 160px">
+                <a class="layui-btn" href="/nstd/basefunc/download_template?param=asset_modify_3">
+                  <i class="layui-icon">&#xe601;</i>模板下载
+                </a>
+              </div>
+              <div class="layui-inline">
+                <button class="layui-btn" id="upload_modify_3">
+                  <i class="layui-icon">&#xe67c;</i>上传数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="layui-col-md6">
+        <div class="layui-card">
+          <div class="layui-card-header">修改资产状态、折旧类别。</div>
+          <div class="layui-card-body">
+            <div style="margin:15px 0">
+              <div class="layui-inline" style="margin-left: 160px">
+                <a class="layui-btn" href="/nstd/basefunc/download_template?param=asset_modify_4"> 
+                  <i class="layui-icon">&#xe601;</i>模板下载
+                </a>
+              </div>
+              <div class="layui-inline">
+                <button class="layui-btn" id="upload_modify_4">
+                  <i class="layui-icon">&#xe67c;</i>上传数据
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var $ = ''
+  var form = ''
+  var upload = ''
+  layui.use(['layer', 'jquery', 'form', 'upload'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+    form = layui.form
+    upload = layui.upload
+
+    //修改当前部门、资产位置、使用机种、备注。
+    uploadInst = upload.render({
+      elem: '#upload_modify_1',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量修改',
+            content: '/nstd/basefunc/upload_table_page?flag=upload_modify_1&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+    //资产批量冲消。
+    uploadInst = upload.render({
+      elem: '#upload_modify_2',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量修改',
+            content: '/nstd/basefunc/upload_table_page?flag=upload_modify_2&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+    //价格、币种批量修改
+    uploadInst = upload.render({
+      elem: '#upload_modify_3',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量修改',
+            content: '/nstd/basefunc/upload_table_page?flag=upload_modify_3&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+    //资产状态、折旧类别
+    uploadInst = upload.render({
+      elem: '#upload_modify_4',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量修改',
+            content: '/nstd/basefunc/upload_table_page?flag=upload_modify_4&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+  });
+
+  //编辑基础信息
+  function edit_base_page(){
+    layer.open({
+      type: 2,
+      title: '编辑录入信息',
+      shadeClose: true,
+      area: ['1050px','600px'],
+      content: '/nstd/baseinfo/edit_base_page'
+    });
+  }
+
+  //编辑出库信息
+  function edit_out_page(){
+    layer.open({
+      type: 2,
+      title: '编辑出库信息',
+      shadeClose: true,
+      area: ['1050px', '500px'],
+      content: '/nstd/baseinfo/edit_out_page'
+    });
+  }
+
+  //编辑退库信息
+  function edit_back_page(){
+    layer.open({
+      type: 2,
+      title: '编辑退库信息',
+      shadeClose: true,
+      area: ['1050px', '500px'],
+      content: '/nstd/baseinfo/edit_back_page'
+    });
+  }
+
+  //编辑支给信息
+  function edit_zj_page(){
+    layer.open({
+      type: 2,
+      title: '编辑支给信息',
+      shadeClose: true,
+      area: ['700px', '500px'],
+      content: '/nstd/baseinfo/edit_zj_page'
+    });
+  }
+
+  //编辑支给归还信息
+  function edit_zj_back_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑支给归还信息',
+      area: ['700px','500px'],
+      content: '/nstd/baseinfo/edit_zj_back_page'
+    });
+  }
+
+  //编辑借用归还信息
+  function edit_loan_back_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑借用归还信息',
+      area: ['700px','500px'],
+      content: '/nstd/baseinfo/edit_loan_back_page' 
+    }); 
+  }
+
+  //编辑库房内部移动
+  function edit_storage_move_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑库房移动信息',
+      area: ['700px','500px'],
+      content: '/nstd/baseinfo/edit_storage_move_page' 
+    });
+  }
+
+  //编辑在线移动信息
+  function edit_online_move_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑在线移动信息',
+      area: ['1050px','500px'],
+      content: '/nstd/baseinfo/edit_online_move_page' 
+    });
+  }
+
+  //编辑位置代码信息
+  function edit_pos_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑位置代码信息',
+      area: ['700px','400px'],
+      content: '/nstd/baseinfo/edit_pos_page'
+    });
+  }
+
+  //编辑资产状态信息
+  function edit_state_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑资产状态信息',
+      area: ['700px','400px'],
+      content: '/nstd/baseinfo/edit_state_page'
+    });
+  }
+
+  //编辑折旧类别信息
+  /*
+  function edit_category_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑折旧类别信息',
+      area: ['700px','400px'],
+      content: '/nstd/baseinfo/edit_category_page'
+    });
+  }
+  */
+
+  function edit_depart_page(){
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: '编辑当前部门信息',
+      area: ['700px','400px'],
+      content: '/nstd/baseinfo/edit_depart_page'
+    });
+  }
+
+  function reset(){
+  	$('input[name!="csrfmiddlewaretoken"]').val('')
+  	$('#a_cd').removeAttr('readonly').focus()
+  }
+
+</script>
+{% endblock %}

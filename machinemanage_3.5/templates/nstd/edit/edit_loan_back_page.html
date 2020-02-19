@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="layui-form mart20">
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产番号:</label>
+	      <div class="layui-input-inline">
+	      	<input type="hidden" id="a_action_id">
+	        <input id="a_cd" class="layui-input" autocomplete="off" placeholder="请输入资产番号" onkeyup="get_edit_storage_move()">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产名称:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_name" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产状态:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_action_state">
+	          <option value=''>请选择资产状态</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	          <option>F</option>
+	          <option>G</option>
+	          <option>H</option>
+	          <option>I</option>
+	          <option>J</option>
+	          <option>K</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">动作类型:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_type" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item layui-form-text">
+	    <label class="layui-form-label">备注信息:</label>
+	    <div class="layui-input-block" style="width:530px">
+	      <textarea id="a_action_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+			<button class="layui-btn marl110" onclick="edit_loan_back()">确定修改</button>
+			<button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	var $ = ''
+	var form = ''
+	layui.use(['jquery', 'form'], function(){
+		$ = layui.jquery;
+		form = layui.form;
+
+		form.render('select');
+	});
+
+	function get_edit_storage_move(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			$.ajax({
+				url: '/nstd/edit/get_edit_storage_move',
+				type: 'get',
+				data: {a_cd:a_cd},
+				dataType: 'JSON',
+				success: function(data){
+					$('#a_name').val(data.a_name)
+					$('#a_action_state').val(data.a_action_state)
+					$('#a_action_remark').val(data.a_action_remark)
+					$('#a_action_type').val(data.a_action_type)
+					$('#a_action_id').val(data.a_action_id)
+					form.render('select')
+					$('#a_cd').attr('readonly',true)
+				}
+			});
+		}
+	}
+
+	function edit_loan_back(){
+		let a_action_state = $('#a_action_state').val()
+		let a_action_remark = $('#a_action_remark').val()
+		let a_action_type = $('#a_action_type').val()
+		let a_action_id = $('#a_action_id').val()
+		if(a_action_type != '在库'){
+			layer.alert('该资产未在库',{icon:2})
+			return
+		}
+		let data = {
+			a_action_state:a_action_state,a_action_remark:a_action_remark,
+			a_action_id:a_action_id,csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+		}
+		$.ajax({
+			url: '/nstd/edit/edit_loan_back',
+			type: 'post',
+			data: data,
+			dataType: 'JSON',
+			success: function(data){
+				if(data.result){
+					layer.msg('修改成功',{icon:1})
+					reset()
+				}
+			}
+		});
+	}
+
+	function reset(){
+		$('#a_cd').removeAttr('readonly').focus()
+		$('select').val('')
+		$('input[name!="csrfmiddlewaretoken"]').val('')
+		$('textarea').val('')
+		form.render('select')
+	}
+
+</script>
+{% endblock %}

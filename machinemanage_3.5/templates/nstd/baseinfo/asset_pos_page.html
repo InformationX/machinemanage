@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产位置管理</legend>
+</fieldset>
+
+{% csrf_token %}
+<div class="layui-form mart10 pad0_10" style="min-width:1040px">
+  <div class="layui-form-item">
+  	<label class="layui-form-label">条形码:</label>
+    <div class="layui-input-inline">
+      <input id="p_code" autocomplete="off" class="layui-input" readonly style="border-width:0 0 1px 0">
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+  	<div class="layui-inline layui-form-pane">
+      <label class="layui-form-label">位置编码:</label>
+      <div class="layui-input-inline w120">
+        <input id="p_building" autocomplete="off" class="layui-input" placeholder="建筑物" onchange="change_code()">
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="layui-input-inline w120">
+        <input id="p_floor" autocomplete="off" class="layui-input" placeholder="楼层" onchange="change_code()">
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="layui-input-inline w120">
+        <input id="p_area" autocomplete="off" class="layui-input" placeholder="线别" onchange="change_code()">
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="layui-input-inline w120">
+        <input id="p_column" autocomplete="off" class="layui-input" placeholder="组别" onchange="change_code()">
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="layui-input-inline w120">
+        <input id="p_position" autocomplete="off" class="layui-input" placeholder="类别" onchange="change_code()">
+      </div>
+    </div>
+    <div class="layui-inline">
+      <div class="fl h36">
+        <button class="layui-btn" onclick="add_position()">点击添加</button>
+        <button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+      </div>
+    </div>
+  </div>
+
+  <table id="position" lay-filter="test"></table>
+
+  <script type="text/html" id="barDemo">
+  	<a class="layui-btn layui-btn-xs" lay-event="edit">
+  	    <i class="layui-icon">&#xe642;</i>编辑
+  	</a>
+  	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">
+  	    <i class="layui-icon">&#xe640;</i>删除
+  	</a>
+  </script>
+
+  <!-- 弹窗信息 -->
+  <div id="editcon" class="hid">
+    
+  </div>
+
+</div>
+
+<script>
+  var layer = ''
+  var $ = ''
+  var table = ''
+  var tableIns = ''
+  layui.use(['layedit', 'jquery', 'table'], function(){
+    $ = layui.jquery
+	  layer = layui.layer
+	  table = layui.table
+
+	  tableIns = table.render({
+      elem: '#position'
+      ,url: '/nstd/baseinfo/get_pos_data' //数据接口
+      ,page: true //开启分页
+      ,loading: false
+      ,limit: 20
+      ,limits: [20,50,150,200]
+      ,cols: [[ //表头
+        {field: 'index', title: '序号', width: 100}
+        ,{field: 'p_building', title: '建筑物', width:120}
+        ,{field: 'p_floor', title: '楼层', width:120}
+        ,{field: 'p_area', title: '线别', width:120}
+        ,{field: 'p_column', title: '组别', width:120} 
+        ,{field: 'p_position', title: '类别', width: 120}
+        ,{field: 'p_code', title: '条形码', width: 150}
+        ,{field: '操作', align:'center', toolbar: '#barDemo', width:150}
+      ]]
+	  });
+
+    $(function(){
+      $('.layui-layer-content').css('height','auto')
+    })
+
+  	table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+  	  var data = obj.data; //获得当前行数据
+  	  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  	  var tr = obj.tr; //获得当前行 tr 的DOM对象
+  	 
+  	  if(layEvent === 'edit'){ //查看
+  	    //do somehing
+        let p_id = data.p_id
+        let p_building = data.p_building
+        let p_floor = data.p_floor
+        let p_area = data.p_area
+        let p_column = data.p_column
+        let p_position = data.p_position
+        let p_code = data.p_code
+
+        //$('#edit_p_building').val(p_building)  数据注入不了，该字拼接
+        layer.open({
+          title: '资产位置修改',
+          shadeClose: true,
+          resize:false,
+          offset:'100px', //只定义top坐标，水平保持居中
+          skin: 'layui-layer-demo',
+          area: ['780px', 'auto'],//宽高
+          btn: ['确定','取消'],
+          content: get_edit_str(p_building,p_floor,p_area,p_column,p_position,p_code),
+          yes: function(index, layero){
+            let edit_p_building = $('#edit_p_building').val()
+            let edit_p_floor = $('#edit_p_floor').val()
+            let edit_p_area = $('#edit_p_area').val()
+            let edit_p_column = $('#edit_p_column').val()
+            let edit_p_position = $('#edit_p_position').val()
+            let edit_p_code = $('#edit_p_code').val()
+            let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+            data = {
+              p_id:p_id,csrfmiddlewaretoken:csrfmiddlewaretoken,
+              edit_p_building:edit_p_building,edit_p_floor:edit_p_floor,edit_p_area:edit_p_area,
+              edit_p_column:edit_p_column,edit_p_position:edit_p_position,edit_p_code:edit_p_code
+            }
+            $.ajax({
+              url: '/nstd/baseinfo/edit_pos',
+              type: 'post',
+              data: data,
+              dataType: 'json',
+              success: function(data){
+                if(data.result){
+                  //同步更新缓存对应的值
+                  obj.update({
+                    p_building: edit_p_building,
+                    p_floor: edit_p_floor,
+                    p_area: edit_p_area,
+                    p_column: edit_p_column,
+                    p_position: edit_p_position,
+                    p_code: edit_p_code
+                  });
+                  layer.msg('修改成功',{icon:1})
+                }else{
+                  layer.alert('操作失败!',{title:'温馨提示',icon:2})
+                }
+              },
+              error: function(xmlHq,status,errorThrows){
+                console.log(errorThrows)
+              }
+            })
+            layer.close(index)
+          },
+          btn2: function(index,layero){
+            layer.msg('操作已取消')
+          }
+        });
+  	  }else if(layEvent === 'del'){ //删除
+    	  layer.confirm('确定要删除吗？', {title:'温馨提示',icon:3,shadeClose:true},function(index){
+          let p_id = data.p_id
+          $.ajax({
+            url: '/nstd/baseinfo/asset_pos_del',
+            data: {p_id:p_id},
+            type: 'get',
+            dataType: 'json',
+            success: function(data){
+              if(data.result){
+                layer.msg('删除成功',{icon:1})
+                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+                layer.close(index);
+              }else{
+                layer.alert('操作失败',{title:'温馨提示',icon:2})
+              }
+            },
+            error: function(xmlHq,status,errorThrows){
+              console.log(errorThrows)
+            }
+          })
+    	  },function(index){
+            layer.msg('操作已取消')
+        });
+  	  }
+  	});
+  });
+
+  function change_code(){
+  	let p_building = $('#p_building').val()
+  	let p_floor = $('#p_floor').val()
+  	let p_area = $('#p_area').val()
+  	let p_column = $('#p_column').val()
+  	let p_position = $('#p_position').val()
+
+  	let str = p_building + p_floor + p_area + p_column + p_position
+  	$('#p_code').val(str)
+  }
+
+  function reset(){
+  	$('input').val('')
+  }
+
+  function add_position(){
+  	let id_list = ['p_building','p_floor','p_area','p_column','p_position']
+  	let vde = vde_is_null(id_list)
+  	if(vde){
+      let p_building = $('#p_building').val()
+      let p_floor = $('#p_floor').val()
+      let p_area = $('#p_area').val()
+      let p_column = $('#p_column').val()
+      let p_position = $('#p_position').val()
+  		let p_code = $('#p_code').val()
+      let data = {
+        p_building:p_building,p_floor:p_floor,p_area:p_area,
+        p_column:p_column,p_position:p_position,p_code:p_code
+      }
+  		$.ajax({
+  			url: '/nstd/baseinfo/add_pos',
+  			data: data,
+  			type: 'get',
+  			dataType: 'json',
+  			success: function(data){
+  				if(data.result){
+  					layer.msg('添加成功',{icon:1})
+            tableIns.reload({
+              page:{curr:1}
+            });
+            reset()
+  				}else{
+            layer.alert('添加失败',{icon:2})
+          }
+  			},
+  			error: function(xmlHq,status,errorThrows){
+  				console.log(errorThrows)
+  			}
+  		})
+  	}
+  }
+
+  //获取弹窗渲染字符串
+  function get_edit_str(p_building,p_floor,p_area,p_column,p_position,p_code){
+    str = '<div class="layui-form-item">' +
+            '<div class="layui-form-item">' +
+              '<label class="layui-form-label">条形码：</label>' +
+              '<div class="layui-input-inline" style="width:80%">' +
+                '<input id="edit_p_code" autocomplete="off" class="layui-input" style="border-width:0 0 1px 0" readonly value="'+ p_code +'">' +
+              '</div>' +
+            '</div>' +
+            '<div class="layui-inline">' +
+              '<label class="layui-form-label">位置编码：</label>' +
+              '<div class="layui-input-inline" style="width: 100px;">' +
+                '<input id="edit_p_building" placeholder="建筑物" class="layui-input" autocomplete="off" value="'+ p_building +'" onkeyup="change_p_code()">' +
+              '</div>' +
+              '<div class="layui-form-mid">-</div>' +
+              '<div class="layui-input-inline" style="width: 100px;">' +
+                '<input id="edit_p_floor" value="'+ p_floor +'" placeholder="楼层" autocomplete="off" class="layui-input" onkeyup="change_p_code()">' +
+              '</div>' +
+              '<div class="layui-form-mid">-</div>' +
+              '<div class="layui-input-inline" style="width: 100px;">' +
+                '<input id="edit_p_area" value="'+ p_area +'" placeholder="区域" autocomplete="off" class="layui-input" onkeyup="change_p_code()">' +
+              '</div>' +
+              '<div class="layui-form-mid">-</div>' +
+              '<div class="layui-input-inline" style="width: 100px;">' +
+                '<input id="edit_p_column" value="'+ p_column +'" placeholder="列号" autocomplete="off" class="layui-input" onkeyup="change_p_code()">' +
+              '</div>' +
+              '<div class="layui-form-mid">-</div>' +
+              '<div class="layui-input-inline" style="width: 100px;">' +
+                '<input id="edit_p_position" value="'+ p_position +'" placeholder="位置" autocomplete="off" class="layui-input" onkeyup="change_p_code()">' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+    return str
+  }
+
+  function change_p_code(){
+    let edit_p_building = $('#edit_p_building').val()
+    let edit_p_floor = $('#edit_p_floor').val()
+    let edit_p_area = $('#edit_p_area').val()
+    let edit_p_column = $('#edit_p_column').val()
+    let edit_p_position = $('#edit_p_position').val()
+    let edit_p_code = edit_p_building + edit_p_floor + edit_p_area + edit_p_column + edit_p_position
+    $('#edit_p_code').val(edit_p_code)
+  }
+
+</script>
+{% endblock %}

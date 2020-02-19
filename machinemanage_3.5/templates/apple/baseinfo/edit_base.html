@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="layui-form mart10">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="get_base_detail()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" class="layui-input" placeholder="请输入型号" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号:</label>
+      <div class="layui-input-inline">
+        <input id="a_fuselage_cd" class="layui-input" placeholder="请输入机身号" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体资产号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_cd" class="layui-input" placeholder="请输入主体资产号" autocomplete="off" onkeyup="get_serial_by_cd()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">主体序列号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_serial" class="layui-input" placeholder="请输入主体序列号" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">位置代码:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_loc" class="layui-input" placeholder="请输入入库位置" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产状态:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_state" class="layui-input" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">当前部门:</label>
+      <div class="layui-input-inline">
+        <input id="a_dept_cd" class="layui-input" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">备注信息:</label>
+    <div class="layui-input-block" style="width:530px">
+      <textarea id="a_action_remark" placeholder="请输入备注内容" class="layui-textarea"></textarea>
+    </div>
+  </div>
+  <div class="layui-form-item">
+  	<button class="layui-btn marl110" onclick="edit_base()">确定修改</button>
+  	<button class="layui-btn layui-btn-primary marl110" onclick="edit_reset()">点击重置</button>
+  </div>
+</div>
+
+<script>
+	var $ = ''
+	var layer = ''
+	var isFind = false
+	layui.use(['jquery','layer'],function(){
+		$ = layui.jquery
+		layer = layui.layer
+
+	});
+
+	//查询详情信息
+	function get_base_detail(){
+		let keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			if(a_cd != ''){
+				$.ajax({
+					url: '/b/baseinfo/get_base_detail',
+					type: 'get',
+					data: {a_cd:a_cd},
+					dataType: 'JSON',
+					success: function(data){
+						if(data.result){
+							$('#a_cd').attr('readonly','')
+							$('#a_type_cd').val(data.a_type_cd)
+							$('#a_fuselage_cd').val(data.a_fuselage_cd)
+							$('#a_main_cd').val(data.a_main_cd)
+							$('#a_main_serial').val(data.a_main_serial)
+							$('#a_action_loc').val(data.a_action_loc)
+							$('#a_action_state').val(data.a_action_state)
+							$('#a_dept_cd').val(data.a_dept_cd)
+							$('#a_action_remark').val(data.a_action_remark)
+							isFind = true
+						}else{
+							layer.msg(data.msg,{icon:2})
+						}
+					}
+				});
+			}
+		}
+	}
+
+	//根据主体资产号查询主题序列号
+	function get_serial_by_cd(){
+		let keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_main_cd = $('#a_main_cd').val()
+			/*
+			$.ajax({
+				url: '/b/baseinfo/get_serial_by_cd',
+				type: 'get',
+				dataType: 'JSON',
+				data: {a_main_cd:a_main_cd},
+				success: function(data){
+
+				}
+			});
+			*/
+		}
+	}
+
+	//编辑基础信息
+	function edit_base(){
+		if(!isFind){
+			layer.alert('请先查询数据!',{icon:7})
+			return
+		}
+		let a_cd = $('#a_cd').val()
+		let a_type_cd = $('#a_type_cd').val()
+		let a_fuselage_cd = $('#a_fuselage_cd').val()
+		let a_main_cd = $('#a_main_cd').val()
+		let a_main_serial = $('#a_main_serial').val()
+		let a_action_loc = $('#a_action_loc').val()
+		let a_action_state = $('#a_action_state').val()
+		let a_dept_cd = $('#a_dept_cd').val()
+		let a_action_remark = $('#a_action_remark').val()
+		let csrf = $('input[name="csrfmiddlewaretoken"]').val()
+		let vde = vde_is_null(['a_cd','a_type_cd','a_fuselage_cd','a_main_cd','a_main_serial','a_action_loc','a_action_state']);
+		if(!vde){
+			return
+		}
+
+		let postData = {
+			a_cd:a_cd, a_type_cd:a_type_cd, a_fuselage_cd:a_fuselage_cd,
+			a_main_cd:a_main_cd, a_main_serial:a_main_serial,a_action_loc:a_action_loc, 
+			a_action_state:a_action_state,a_dept_cd:a_dept_cd,
+			a_action_remark:a_action_remark, csrfmiddlewaretoken:csrf
+		}
+		$.ajax({
+			url: '/b/baseinfo/edit_base',
+			type: 'post',
+			dataType: 'JSON',
+			data: postData,
+			success: function(data){
+				if(data.result){
+					layer.msg('修改成功',{icon:1})
+					edit_reset()
+				}else{
+					layer.alert('操作失败!',{icon:2})
+				}
+			}
+		});
+	}
+
+	//重置所有输入
+	function edit_reset(){
+	  $('input[name!="csrfmiddlewaretoken"]').val('')
+	  $('#a_action_remark').val('')
+	  $('#a_cd').removeAttr('readonly').focus()
+	}
+
+	//验证输入选项或选择选项是否为空
+	function vde_is_null(id_list){
+	  for(let i = 0;i < id_list.length;i++){
+	    id = id_list[i]
+	    value = $('#' + id).val()
+	    tagName = $('#' + id)[0].tagName
+	    if(value == ''){
+	      if(tagName == 'INPUT'){
+	        $('#' + id).focus()
+	        layer.tips('该选项输入不能为空!', $('#' + id), {
+	          tips: [3, 'red']
+	        });
+	      }else{
+	        layer.tips('请选择该选项!', $('#' + id).parent(), {
+	          tips: [3, 'red']
+	        });
+	      }
+	      return false
+	    }
+	  }
+	  return true
+	}
+
+</script>
+
+{% endblock %}

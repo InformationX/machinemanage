@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="layui-form mart10">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="get_zj_back()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+  <hr class="layui-bg-blue" style="width:650px;margin:0 auto">
+  <div class="layui-form-item mart20">
+    <div class="layui-inline">
+      <label class="layui-form-label">主体资产号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_cd" class="layui-input" placeholder="请输入主体资产号" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体序列号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_serial" class="layui-input" placeholder="请输入主体序列号" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">归还位置:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_loc" class="layui-input" placeholder="请输入被支给方" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产状态:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_state" class="layui-input" placeholder="请输入资产状态" autocomplete="off">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">备注信息:</label>
+    <div class="layui-input-block" style="width:530px">
+      <textarea id="a_action_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <input type="hidden" id="id">
+  	<button class="layui-btn marl110" onclick="edit_zj_back()">确定修改</button>
+  	<button class="layui-btn layui-btn-primary marl110" onclick="edit_reset()">点击重置</button>
+  </div>
+</div>
+
+<script>
+  var $ = ''
+  var layer = ''
+  layui.use(['jquery', 'layer'],function(){
+    $ = layui.jquery
+    layer = layui.layer
+
+  });
+
+  function get_zj_back(){
+    let keyCode = window.event.keyCode
+    if(keyCode == 13){
+      let a_cd = $('#a_cd').val()
+      if(a_cd != ''){
+        $.ajax({
+          url: '/b/baseinfo/get_zj_back',
+          type: 'get',
+          data: {a_cd: a_cd},
+          dataType: 'JSON',
+          success: function(data){
+            if(data.result){
+              $('#a_type_cd').val(data.a_type_cd)
+              $('#a_main_cd').val(data.a_main_cd)
+              $('#a_main_serial').val(data.a_main_serial)
+              $('#a_action_loc').val(data.a_action_loc)
+              $('#a_action_state').val(data.a_action_state)
+              $('#a_action_remark').val(data.a_action_remark)
+              $('#id').val(data.id) //出库Id编号
+            }else{
+              layer.msg(data.msg,{icon:7})
+            }
+          }
+        });
+      }
+    }
+  }
+
+  function edit_zj_back(){
+    let vde = vde_is_null(['a_cd','a_main_cd','a_main_serial','a_action_loc','a_action_state'])
+    if(!vde){
+      return
+    }
+
+    let a_main_cd = $('#a_main_cd').val()
+    let a_main_serial = $('#a_main_serial').val()
+    let a_action_loc = $('#a_action_loc').val()
+    let a_action_state = $('#a_action_state').val()
+    let a_action_remark = $('#a_action_remark').val()
+    let id = $('#id').val()
+    let csrf = $('input[name="csrfmiddlewaretoken"]').val()
+    data = {
+      a_main_cd:a_main_cd, a_main_serial:a_main_serial,
+      a_action_loc:a_action_loc, a_action_state:a_action_state,
+      a_action_remark:a_action_remark, id:id, 'csrfmiddlewaretoken':csrf
+    }
+    $.ajax({
+      url: '/b/baseinfo/edit_zj_back',
+      type: 'post',
+      dataType: 'JSON',
+      data: data,
+      success: function(data){
+        if(data.result){
+          layer.msg('操作成功',{icon:1})
+        }else{
+          layer.msg('修改失败',{icon:2})
+        }
+      }
+    });
+  }
+
+  function edit_reset(){
+    $('input[name!="csrfmiddlewaretoken"]').val('')
+    $('#a_action_remark').val('')
+    $('#a_cd').removeAttr('readonly').focus()
+  }
+
+</script>
+{% endblock %}

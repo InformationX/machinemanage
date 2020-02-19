@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .w85{width:85px;}
+</style>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>支给归还</legend>
+</fieldset>
+
+<div style="padding:0 10px">
+  <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+    <ul class="layui-tab-title">
+      <li>支给归还</li>
+      <li class="layui-this">批量支给</li>
+    </ul>
+    <div class="layui-tab-content">
+      <div class="layui-tab-item">
+        {% include "apple/basefunc/zj_revert.html" %}
+      </div>
+      <!-- 资产批量支给归还 -->
+      <div class="layui-tab-item layui-show">
+        <div class="layui-form mart10">
+          <div class="layui-form-item">
+            <a class="layui-btn" href="/b/download_template?param=zj_revert">
+                <i class="layui-icon">&#xe601;</i>模板下载
+            </a>
+            <div class="layui-inline" style="margin-bottom: 0">
+              <button class="layui-btn" id="upload_zj_revert">数据上传</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+	layui.use(['element','jquery','upload'],function(){ 
+		upload = layui.upload;
+
+		//数据上传
+	    uploadInst = upload.render({
+	      elem: '#upload_zj_revert',
+	      url: '/b/uploadfile',
+	      data: {
+	        'csrfmiddlewaretoken': '{{ csrf_token }}'
+	      },
+	      accept: 'file',
+	      before: function(obj){
+	        layer.load();
+	      },
+	      done: function(res){
+	        layer.closeAll('loading');
+	        let result = res.result
+	        if(result){ //文件上传成功
+	          let tmp_file = res.tmp_file;  
+	          //弹出即全屏
+	          var index = layer.open({
+	            type: 2,
+	            title: '资产设备支给归还',
+	            content: '/b/upload_table_page?opr_type=zj_revert&tmp_file=' + tmp_file,
+	            area: ['320px', '195px'],
+	            maxmin: true
+	          });
+	          layer.full(index);
+	        }
+	      },
+	      error:function(){
+	        layer.closeAll('loading');
+	      }
+	    });
+	});
+</script>
+
+{% endblock %}

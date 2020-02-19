@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style type="text/css">
+	body{padding: 10px 30px;}
+	.hide{display:none}
+</style>
+
+<blockquote class="layui-elem-quote">添加部门及其子部门</blockquote>
+<button class="layui-btn layui-btn-primary up-all">全部收起</button>
+<button class="layui-btn layui-btn-primary down-all">全部展开</button>
+<button class="layui-btn" onclick="add_depart(0)">
+	<i class="layui-icon">&#xe608;</i> 添加部门
+</button>
+<table class="layui-table layui-form" id="tree-table"></table>
+
+<script>
+	layui.config({
+		base: "{% static 'js/' %}",
+	})
+
+	var $ = ''
+	var treetable = ''
+	var form = ''
+	var layer = ''
+	var basedata = []
+	var del_dept_list = []
+
+	layui.use(['treetable','form','jquery'], function(){
+		$ = layui.jquery
+		treetable = layui.treetable
+		form = layui.form
+		layer = layui.layer
+		render_table()
+
+		treetable.on('treetable(add)',function(data){
+			let d_id = data.item.id
+			add_depart(d_id)
+		})
+		
+		treetable.on('treetable(edit)',function(data){
+			edit_depart(data)
+		})
+
+		treetable.on('treetable(del)',function(data){
+			del_depart(data)
+		})
+
+		$('.up-all').click(function(){
+			treetable.all('up');
+		})
+		
+		$('.down-all').click(function(){
+			treetable.all('down');
+		})
+		
+		$('.get-checked').click(function(){
+			console.dir(treetable.all('checked'));
+		})
+	})
+
+	//递归获取所有要删除的部门ID编号
+	function get_all_del_depart(d_id){
+		del_dept_list.push(d_id)
+		for(let i=0;i<basedata.length;i++){
+			if(basedata[i].pid == d_id){
+				get_all_del_depart(basedata[i].id)
+			}
+		}
+	}
+
+	//删除节点及其子节点
+	function del_depart(data){
+		layer.confirm('子节点也会被删除，确定要删除吗？',{icon:3},function(index, layero){
+		  var d_id = data.item.id
+		  get_all_del_depart(d_id)
+		  $.ajax({
+			url: '/b/baseinfo/del_depart',
+			type: 'get',
+			dataType: 'json',
+			data: {del_dept_list: JSON.stringify(del_dept_list)},
+			success: function(data){
+				if(data.result){
+					layer.msg('删除成功',{icon:1})
+					render_table()
+				}
+			},
+			error: function(xmlHq,status,errorThrows){
+				console.log(status)
+				layer.msg('操作失败',{icon:2})
+			}
+		  })
+		}, function(index){
+		  //按钮【按钮二】的回调
+		  layer.msg('操作已取消')
+		  layer.close(index)
+		});
+		del_dept_list.splice(0,del_dept_list.length)
+	}
+
+	function edit_depart(data){
+		layer.closeAll()
+		layer.prompt({title: '修改部门名称', value: data.item.d_name}, function(val, index){
+		  	$.ajax({
+		  		url: '/b/baseinfo/edit_depart',
+		  		type: 'get',
+		  		data:{d_id:data.item.id,d_name:val},
+		  		dataType: 'json',
+		  		success: function(data){
+		  			if(data.result){
+		  				layer.msg('修改成功',{icon:1})
+		  				render_table()
+		  				layer.close(index)
+		  			}
+		  		},
+		  		error: function(xmlHq,status,errorThrows){
+		  			console.log(status)
+		  			layer.msg('操作失败')
+		  			layer.close(index)
+		  		}
+		  	})
+		})
+	}
+
+	function add_depart(d_id){
+		layer.closeAll()
+		layer.prompt(function(val, index){
+			$.ajax({
+				url:'/b/baseinfo/add_depart',
+				data:{d_id:d_id,d_name:val},
+				dataType:'json',
+				success:function(data){
+					if(data.result){
+						layer.msg('部门添加成功',{icon:1})
+						render_table()
+						layer.close(index)
+					}
+				},
+				error:function(xmlHq,status,errorThrows){
+					layer.alert('操作失败',{icon:2})
+					console.log(status)
+				}
+			})
+		})
+	}
+
+	function render_table(){
+		/*
+		basedata=[
+			{"id":1,"pid":0,"d_name":"1-1"},
+			{"id":2,"pid":0,"d_name":"1-2"},
+			{"id":3,"pid":0,"d_name":"1-3"},
+			{"id":4,"pid":1,"d_name":"1-1-1"},
+			{"id":5,"pid":1,"d_name":"1-1-2"},
+			{"id":6,"pid":2,"d_name":"1-2-1"},
+			{"id":7,"pid":2,"d_name":"1-2-3"},
+			{"id":8,"pid":3,"d_name":"1-3-1"},
+			{"id":9,"pid":3,"d_name":"1-3-2"},
+			{"id":10,"pid":4,"d_name":"1-1-1-1"},
+			{"id":11,"pid":4,"d_name":"1-1-1-2"},
+			{"id":12,"pid":11,"d_name":"最后一级"}
+		];
+		*/
+		
+		$.ajax({
+			url: '/b/baseinfo/search_depart',
+			type: 'get',
+			dataType: 'json',
+			async:false,
+			success: function(data){
+				basedata = data.depart_list
+			},
+			error:function(xmlHq,status,errorThrows){
+				console.log(status)
+			}
+		});
+		
+		treetable.render({
+			elem: '#tree-table',
+			data: basedata,
+			field: 'd_name',
+			cols: [
+				{
+					field: 'd_name',
+					title: '部门名称',
+					width: '30%',
+					template: function(item){
+						return item.d_name;
+					}
+				},
+				{
+					field: 'id',
+					title: 'ID',
+					width: '20%'
+				},
+				{
+					field: 'pid',
+					title: '父ID',
+					width: '20%',
+				},
+				{
+					field: 'actions',
+					title: '操作',
+					width: '30%',
+					template: function(item){
+						let str = '<button class="layui-btn layui-btn-xs" lay-filter="add">' +
+						    '<i class="layui-icon">&#xe654;</i>添加子级' +
+						  '</button>&nbsp;' +
+						  '<button class="layui-btn layui-btn-normal layui-btn-xs" lay-filter="edit">' +
+						    '<i class="layui-icon">&#xe642;</i>编辑部门' +
+						  '</button>' +
+						  '<button class="layui-btn layui-btn-danger layui-btn-xs" lay-filter="del">' +
+						    '<i class="layui-icon">&#xe640;</i>删除节点' +
+						  '</button>'
+						return str
+					},
+				}
+			]
+		});
+	}
+</script>
+{% endblock %}

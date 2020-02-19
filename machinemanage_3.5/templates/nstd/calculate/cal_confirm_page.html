@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产计量确认</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1025px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input type="hidden" id="a_material_id"/>
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="get_is_need_cal()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产名称:</label>
+      <div class="layui-input-inline">
+        <input id="a_name" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产编号:</label>
+      <div class="layui-input-inline">
+        <input id="a_self_cd" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号:</label>
+      <div class="layui-input-inline">
+        <input id="a_fuselage_cd" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+
+    <div class="layui-inline">
+      <label class="layui-form-label">是否计量</label>
+      <div class="fl h36_w190">
+        <select id="a_need_cal">
+          <option value="">请选择是否需要计量</option>
+          <option value="0">不需要计量</option>
+          <option value="1">需要计量</option>
+        </select>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+
+    <!--
+    <div class="layui-inline">
+      <label class="layui-form-label">是否计量:</label>
+      <div class="layui-input-inline">
+        <input id="a_need_cal" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    -->
+  </div>
+  <div style="clear:both"></div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label"></label>
+      <button class="layui-btn" style="width:190px" onclick="confirmToCal()">
+        点击确认
+      </button>
+      <button class="layui-btn layui-btn-primary" onclick="reset()">
+        点击重置
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var form = ''
+  var $ = ''
+  layui.use(['layer', 'jquery', 'form'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+    form = layui.form
+    form.render('select')
+
+  });
+
+  //计量前搜素详情
+  function get_is_need_cal(){
+    let keyCode = window.event.keyCode
+    if(keyCode == 13){
+      let a_cd = $('#a_cd').val()
+      if(a_cd == ''){
+        layer.alert('资产番号不能为空！',{title:'温馨提示',icon:7})
+      }else{
+
+        $.ajax({
+          url: '/nstd/calculate/get_is_need_cal',
+          type: 'get',
+          dataType: 'json',
+          data: {a_cd:a_cd},
+          success:function(data){
+            if(data.result){
+              $('#a_material_id').val(data.a_material_id)
+              $('#a_type_cd').val(data.a_type_cd)
+              $('#a_name').val(data.a_name)
+              $('#a_self_cd').val(data.a_self_cd)
+              $('#a_fuselage_cd').val(data.a_fuselage_cd)
+              $('#a_need_cal').val(data.a_need_cal)
+              $('#a_cd').attr('readonly','')
+              form.render('select')
+            }else{
+              layer.alert(data.msg,{title:'温馨提示',icon:7})
+              reset()
+            }
+          }
+        })
+
+      }
+    }
+  }
+
+  //资产计量确认
+  function confirmToCal(){
+    a_material_id = $('#a_material_id').val()
+    a_cd = $('#a_cd').val()
+    a_need_cal = $('#a_need_cal').val()
+
+    if(a_cd == ''){
+      layer.alert('资产番号不能为空！',{title:'温馨提示',icon:7})
+    }else if(a_material_id == ''){
+      layer.alert('未搜索到数据!',{title:'温馨提示',icon:7})
+    }else if(a_need_cal == ''){
+      layer.alert('未选择是否计量选项!',{title:'温馨提示',icon:7})
+    }else{
+      $.ajax({
+        url: '/nstd/calculate/confirmToCal',
+        type: 'get',
+        data: {a_material_id: a_material_id, a_need_cal:a_need_cal},
+        dataType: 'json',
+        success: function(data){
+          if(data.result){
+            layer.msg('确认成功!',{icon:1})
+            $('#a_need_cal').val('已确认')
+          }else{
+            layer.alert('操作失败!',{title:'温馨提示',icon:2})
+            reset()
+          }
+        }
+      })
+    }
+  }
+
+  //重置输入
+  function reset(){
+    $('input[name != "csrfmiddlewaretoken"]').val('')
+    $('#a_cd').removeAttr('readonly').focus()
+  }
+
+</script>
+{% endblock %}

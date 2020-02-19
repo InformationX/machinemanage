@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+	<style>
+	  
+	</style>
+	<fieldset class="layui-elem-field layui-field-title atitle">
+	  <legend>在线盘点查询</legend>
+	</fieldset>
+
+	<script type="text/html" id="excel_operation">
+		<button class="layui-btn layui-btn-sm" lay-event="down">下载</button>
+		<button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">删除</button>
+	</script>
+
+	<div class="layui-form">
+		<div class="layui-form-item">
+			<div class="layui-inline">
+				<label class="layui-form-label">日期范围</label>
+				<div class="layui-input-inline">
+					<input type="text" class="layui-input" id="daterange" placeholder="请选择日期范围">
+				</div>
+				<div class="layui-input-inline" style="width:100px">
+					<button class="layui-btn" onclick="getOnlineVen()">点击查询</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div style="padding: 0 10px">
+		<table lay-even lay-skin="line" lay-filter="excel_filter" id="inventable"></table>
+	</div>
+
+	<script>
+  		var laydate = ''
+  		var layer = ''
+  		var table = ''
+  		var tableIns = ''
+
+  		layui.use(['laydate','layer','table'], function(){
+  			laydate = layui.laydate;
+  			layer = layui.layer;
+  			table = layui.table;
+  			$ = layui.jquery
+
+  			laydate.render({
+			    elem: '#daterange'
+			    ,type: 'date'
+			    ,range: true
+			});
+
+			tableIns = table.render({
+				elem: '#inventable'
+				,page:false
+				,url: '/nstd/ventory/getVenBat' //数据接口
+				,cols: [[ //表头
+					{type: 'numbers', title: '序号', width:60}
+					,{field: 'b_location', title: '位置代码', width:130}
+					,{field: 'b_total', title: '总数量', width:100}
+					,{field: 'b_match', title: '匹配数量', width:100}
+					,{field: 'b_noscanned', title: '未扫描数量', width:100}
+					,{field: 'b_surplus', title: '多余数量', width:100}
+					,{field: 'b_datetime', title: '盘点时间', width:180}
+					,{field: 'b_user_name', title: '操作员', width:100}
+					,{field: 'b_id', title: '盘点批次', hide: true}
+					,{title:'操作',width:200, align:'center', toolbar:'#excel_operation'}
+				]],
+				where: {
+					b_inven_type: 'F'
+				}
+			});
+
+			table.on('tool(excel_filter)', function(obj){
+				let data = obj.data;  //获取当前行数据
+				let layEvent = obj.event;
+				let tr = obj.tr;
+
+				if(layEvent == 'down'){
+					var a = document.createElement('a')
+					var url = '/nstd/ventory/VenExport?b_id=' + data.b_id
+					a.href = url
+					a.click()
+				}else if(layEvent == 'del'){
+					layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+						//向服务端发送删除指令
+						$.ajax({
+							url: '/nstd/ventory/delVen',
+							type: 'get',
+							data: {b_id: data.b_id},
+							dataType: 'json',
+							success: function(data){
+								if(data.result){
+									obj.del();
+									layer.close(index);
+									layer.msg('操作成功',{icon:1});
+								}else{
+									layer.alert('操作失败!',{title:'温馨提示',icon:2})
+								}
+							}
+						});
+					});
+				}
+			});
+  		});
+
+		function getOnlineVen(){
+			let b_inven_type = 'F'
+			let daterange = $('#daterange').val()
+			tableIns.reload({
+				where: { //设定异步数据接口的额外参数，任意设
+					'b_inven_type': b_inven_type, 'daterange': daterange
+				}
+				,page: {
+					curr: 1 //重新从第 1 页开始
+				}
+			});
+  		}
+  	</script>
+{% endblock %}

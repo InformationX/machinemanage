@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<style>
+  .v-hid{visibility: hidden}
+  .mart-8{margin-top:-8px}
+  .bg-pink{background-color: pink !important}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>库房内部移动</legend>
+</fieldset>
+
+<div style="margin-left: 200px">
+  <div class="layui-form-item mart20">
+    <div class="layui-inline marl100">
+      <a class="layui-btn" href="/nstd/basefunc/download_template?param=instorage_move">
+        <i class="layui-icon">&#xe601;</i>模板下载
+      </a>
+      <button class="layui-btn layui-btn-primary layui-bg-cyan" id="upload_move">
+        <i class="layui-icon">&#xe67c;</i>数据上传
+      </button>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var form = ''
+  var $ = ''
+  layui.use(['layedit', 'jquery', 'form', 'upload'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+  	upload = layui.upload
+    form = layui.form
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_move',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;
+          //弹出即全屏
+          var index = layer.open({
+            type: 2, 
+            title: '库房内部批量移动',
+            content: '/nstd/basefunc/upload_table_page?flag=instorage_move&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+  });
+
+  //重置输入
+  function reset(){
+  	$('input[name!="csrfmiddlewaretoken"]').val('')
+	  $('tbody').html(get_line_str())
+  }
+
+</script>
+{% endblock %}

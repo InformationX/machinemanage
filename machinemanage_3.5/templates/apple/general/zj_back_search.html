@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+ <fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>支给归还查询</legend>
+</fieldset>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <label class="layui-form-label">起始日期:</label>
+    <div class="layui-input-inline">
+      <input id="beginDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+  <div class="layui-inline">
+    <label class="layui-form-label">结束日期:</label>
+    <div class="layui-input-inline">
+      <input id="endDate" placeholder="终止日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+  <div class="layui-inline">
+    <div style="margin-left: 0;min-height: 45px">
+      <button class="layui-btn" onclick="get_zj_back()">点击查询</button>
+    </div>
+  </div>
+  <div class="layui-inline">
+    <div style="margin-left: 0;min-height: 45px">
+      <button class="layui-btn" onclick="zj_back_export()">支给归还导出</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 10px">
+	<table id="demo"></table>
+</div>
+
+
+
+<script>
+var table = ''
+var laydate = ''
+var $ = ''
+
+layui.use(['table','jquery','laydate'], function(){
+  table = layui.table
+  laydate = layui.laydate
+  $ = layui.jquery
+
+  let beginDate = one_month_ago()
+  let endDate = getToday()
+
+  laydate.render({
+    elem: '#beginDate',
+    value: beginDate
+  });
+
+  laydate.render({
+    elem: '#endDate',
+    value: endDate
+  })
+});
+
+function get_zj_back(){
+  let beginDate = $('#beginDate').val()
+  let endDate = $('#endDate').val()
+  table.render({
+    elem: '#demo'
+    ,height: 700
+    ,url: '/b/general/get_zj_back' //数据接口
+    ,page: true //开启分页
+    ,limit: 100
+    ,limits: [100,200,300,400,500,1000]
+    ,cols: [[ //表头
+      {field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_type_cd', title: '型号', width:100}
+      ,{field: 'a_fuselage_cd', title: '机身号', width:150}
+      ,{field: 'a_main_cd', title: '主体资产番号', width:150} 
+      ,{field: 'a_main_serial', title: '主体序列号', width: 100}
+      ,{field: 'a_action_state', title: '资产状态', width: 100}
+      ,{field: 'a_action_loc', title: '归还位置', width: 100}
+      ,{field: 'a_action_remark', title: '备注信息', width: 150}
+      ,{field: 'a_opr_user', title: '操作员', width: 120}
+      ,{field: 'a_add_time', title: '归还时间', width: 180}
+    ]]
+    ,where: {beginDate:beginDate, endDate:endDate}
+  });
+}
+
+//支给归还数据导出
+function zj_back_export(){
+  let beginDate = $('#beginDate').val()
+  let endDate = $('#endDate').val()
+  let a = document.createElement('a')
+  a.href = `/b/general/zj_back_export?beginDate=${beginDate}&endDate=${endDate}`
+  a.click()
+}
+
+</script>
+
+<script>
+  //获取一个月以前的日期
+  function one_month_ago(){
+    let date = new Date()
+    date.setMonth(date.getMonth()-1)
+    let year = date.getFullYear()
+    let month = date.getMonth() + 1
+    let day = date.getDate()
+    if(month < 10){
+      month = '0' + month
+    }
+    if(day < 10){
+      day = '0' + day
+    }
+    return year + '-' + month + '-' + day
+  }
+
+  //获取今天日期
+  function getToday(){
+    let date = new Date()
+    let year = date.getFullYear()
+    let month = date.getMonth() + 1
+    let day = date.getDate()
+    let hours = date.getHours()
+    let minutes = date.getMinutes()
+    let seconds = date.getSeconds()
+    if(month < 10){
+      month = '0' + month
+    }
+    if(day < 10){
+      day = '0' + day
+    }
+    if(hours < 10){
+      hours = '0' + hours
+    }
+    if(minutes < 10){
+      minutes = '0' + minutes
+    }
+    if(seconds < 10){
+      seconds = '0' + seconds
+    }
+    //return year + '-' + month + '-' + day + ' ' + hours + ':' + minutes + ':' + seconds
+    return year + '-' + month + '-' + day
+  }
+  
+</script>
+
+{% endblock %}

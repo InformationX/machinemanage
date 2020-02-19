@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 批量修改资产位置 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_edit_loc()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var tmp_file = '{{ tmp_file }}'
+	var hasUpload = false
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/b/get_edit_loc_data' //数据接口
+	      ,cols: [[ //表头
+	      	{type:'numbers', title: '序号', width:60, edit: false}
+	        ,{field: 'a_cd', title: '资产番号', width:120, edit: true}
+	        ,{field: 'a_type_cd', title: '资产型号', width:100, edit: true}
+	        ,{field: 'a_main_cd', title: '主体资产号',width:100, edit: true}
+	        ,{field: 'a_main_serial', title: '主体序列号',width:130, edit: true}
+	        ,{field: 'a_action_dept', title: '当前部门',width:120, edit: true}
+	        ,{field: 'a_action_loc', title: '资产位置',width:100}
+			,{field: 'a_action_type', title: '行为状态',width:100}
+			,{field: 'a_action_id', title: 'ID编号',width:100,hide:true}
+	        ,{title:'操作',width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {
+	        tmp_file:tmp_file
+	      }
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	});
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		let flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let tmp_dict = {}
+			tmp_dict['a_cd'] =  $(this).find('td[data-field="a_cd"]').text()
+			tmp_dict['a_main_cd'] = $(this).find('td[data-field="a_main_cd"]').text()
+			tmp_dict['a_main_serial'] = $(this).find('td[data-field="a_main_serial"]').text()
+			tmp_dict['a_action_dept'] = $(this).find('td[data-field="a_action_dept"]').text()
+			tmp_dict['a_action_loc'] = $(this).find('td[data-field="a_action_loc"]').text()
+			tmp_dict['a_action_type'] = $(this).find('td[data-field="a_action_type"]').text()
+			tmp_dict['a_action_id'] = $(this).find('td[data-field="a_action_id"]').text()
+			if(tmp_dict['a_cd'] == ''){
+				alert(`第${index + 1}行主体资产号不能为空!`)
+				flag = false
+				return false
+			}
+			table_data.push(tmp_dict)
+		});
+		if(flag){
+			return table_data
+		}else{
+			return []
+		}
+	}
+
+	//点击上传按钮开始上传
+	function upload_edit_loc(){
+		if(hasUpload){
+			alert('您已成功上传一次，不能重复上传!')
+			return
+		}
+		let csrf = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		if(table_data.length == 0){
+			return
+		}
+		$.ajax({
+			url: '/b/basefunc/upload_edit_loc',
+			type: 'post',
+			dataType: 'json',
+			data: {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrf},
+			success: function(data){
+				if(data.result){
+					alert('批量上传成功,上传数量:' + data.num)
+					hasUpload = true
+				}else{
+					alert(data.msg)
+				}
+			},
+			error: function(xmlHq,status,errorThrows){
+				console.log(errorThrows)
+			}
+		});
+	}
+
+</script>
+
+{% endblock %}

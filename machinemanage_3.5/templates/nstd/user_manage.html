@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+{% block content %}
+	
+<fieldset class="layui-elem-field layui-field-title atitle">
+	<legend>用户管理</legend>
+</fieldset>
+
+<div style="padding:0 10px">
+	<button class="layui-btn" onclick="userAdd()">
+      <i class="layui-icon">&#xe654;</i>添加用户
+    </button>
+    <table lay-even lay-skin="line" lay-filter="updateFilter" id="userTable"></table>
+</div>
+
+<div id="popup" style="display: none">
+	<div class="layui-form mart10">
+	  	<div class="layui-form-item">
+		    <div class="layui-inline">
+		      <label class="layui-form-label">员工工号:</label>
+		      <div class="layui-input-inline">
+		        <input id="user_num" autocomplete="off" class="layui-input" placeholder="请输入员工工号" readonly>
+		      </div>
+		      <div class="xing">*</div>
+		    </div>
+		    <div class="layui-inline">
+		      <label class="layui-form-label">所属部门:</label>
+		      <div class="fl h36_w190">
+		        <select id="user_depart" lay-search></select>
+		      </div>
+		      <div class="xing marl10">*</div>
+		    </div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-inline">
+		      <label class="layui-form-label">员工姓名:</label>
+		      <div class="layui-input-inline">
+		        <input id="user_name" autocomplete="off" class="layui-input" placeholder="请输入员工姓名">
+		      </div>
+		      <div class="xing">*</div>
+		    </div>
+		    <div class="layui-inline">
+		      <label class="layui-form-label">联系电话:</label>
+		      <div class="layui-input-inline">
+		        <input id="user_phone" autocomplete="off" class="layui-input" placeholder="请输入联系电话">
+		      </div>
+		      <div class="xing">*</div>
+		    </div>
+		</div>
+		<div class="layui-form-item">
+		    <div class="layui-inline">
+		      <label class="layui-form-label">职位职称:</label>
+		      <div class="layui-input-inline">
+		        <input id="user_title" autocomplete="off" class="layui-input" placeholder="请输入联系电话">
+		      </div>
+		      <div class="xing">*</div>
+		    </div>
+		</div>
+		<div class="layui-form-item">
+			<div class="layui-inline">
+		      <label class="layui-form-label">邮箱地址:</label>
+		      <div class="layui-input-inline" style="width:530px">
+		        <input id="user_email" autocomplete="off" class="layui-input" placeholder="请输入联系电话">
+		      </div>
+		      <div class="xing">*</div>
+		    </div>
+		</div>
+	</div>
+</div>
+
+<script type="text/html" id="updateFilter">
+  <button class="layui-btn layui-btn-sm" lay-event="edit">
+  	<i class="layui-icon">&#xe642;</i>编辑
+  </button>
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="del">
+  	<i class="layui-icon">&#xe640;</i>删除
+  </button>
+</script>
+
+<script>
+	var form = ''
+	var layer = ''
+	var $ = ''
+	var table = ''
+
+	layui.use(['form', 'layer', 'jquery', 'table'],function(){
+		form = layui.form
+		layer = layui.layer
+		$ = layui.jquery
+		table = layui.table
+
+		table.render({
+	        elem: '#userTable'
+	        ,url: '/nstd/manage/getUser' //数据接口
+	        ,cols: [[ //表头
+	          {type:'numbers', title: '序号', width:60}
+	          ,{field: 'user_num', title: '工号', width:130}
+	          ,{field: 'user_name', title: '姓名', width:180}
+	          ,{field: 'depart_name', title: '所属部门', width:100}
+	          ,{field: 'user_phone', title: '联系电话', width:120}
+	          ,{field: 'user_email', title: '邮箱地址', width:220}
+	          ,{field: 'user_title', title: '职位职称', width:130}
+	          ,{field: 'depart_id', title: '部门编号', hide: true}
+	          ,{field: 'user_authority', title: '权限等级', hide: true}
+	          ,{title:'操作',width:200, align:'center', toolbar:'#updateFilter'}
+	        ]],
+	        where: {
+	          
+	        }
+	    });
+
+	    //编辑当前行
+		table.on('tool(updateFilter)', function(obj){
+			$('#user_num').attr('readonly','')
+
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'del'){
+				layer.confirm('确认要删除该行吗？',{title:'温馨提示',icon:3},function(index){
+					//obj.del();
+					//layer.close(index);
+					//向服务端发送删除指令
+					let user_num = data.user_num
+					userDelete(user_num,obj,index)
+				});
+		    }else if(layEvent == 'edit'){
+		    	$('#user_num').val(data.user_num)
+		    	$('#user_name').val(data.user_name)
+		    	$('#user_depart').val(data.dept_id)
+		    	$('#user_phone').val(data.user_phone)
+		    	$('#user_email').val(data.user_email)
+		    	$('#user_title').val(data.user_title)
+		    	layer.open({
+				  	type: 1,
+				  	title: '编辑用户信息',
+				  	area: ['685px', '400px'], //宽高
+				  	content: $('#popup'),
+				  	btn:['确定修改','取消操作'],
+				  	yes:function(index, layero){
+				  		let vde = vde_is_null(['user_num','user_name','user_depart','user_phone','user_title','user_title'])
+				  		if(vde){
+				  			userUpdate(obj, index)
+				  		}
+				  	},
+				  	btn2:function(index){
+				  		reset()
+				  		layer.close(index)
+				  	},
+				  	cancel: function(index, layero){
+				  		reset()
+				  	}
+				});
+				form.render('select')
+		    }
+		});
+
+		$(function(){
+			getDepart()
+		});
+	});
+
+	//添加用户
+	function userAdd (){
+		$('#user_num').removeAttr('readonly')
+		layer.open({
+		  	type: 1,
+		  	title: '添加用户信息',
+		  	area: ['685px', '400px'], //宽高
+		  	content: $('#popup'),
+		  	btn:['确定添加','取消操作'],
+		  	yes:function(index, layero){
+		  		let vde = vde_is_null(['user_num','user_name','user_depart','user_phone','user_title','user_email'])
+		  		if(vde){
+		  			let postData = {
+		  				user_num: $('#user_num').val(), user_name: $('#user_name').val(),
+		  				user_depart: $('#user_depart').val(), user_phone: $('#user_phone').val(),
+		  				user_title: $('#user_title').val(),	user_email: $('#user_email').val(),
+		  				csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+		  			}
+		  			$.ajax({
+		  				url: '/nstd/manage/userAdd',
+		  				type: 'post',
+		  				data: postData,
+		  				dataType: 'json',
+		  				success: function(data){
+		  					if(data.result){
+		  						table.reload('userTable')
+		  						layer.msg('用户添加成功',{icon:1})
+		  					}else{
+		  						layer.msg('操作失败',{icon:2})
+		  					}
+		  				},
+		  				error: function(xmlHq,status,errorThrows){
+		  					console.log(status)
+		  				}
+		  			})
+		  			layer.close(index)
+		  			reset()
+		  		}
+		  	},
+		  	btn2:function(index){
+		  		reset()
+		  		layer.close(index)
+		  	}
+		});
+	}
+
+	//更新用户
+	function userUpdate (obj, index){
+		let postData = {
+			user_num: $('#user_num').val(), user_name: $('#user_name').val(),
+			user_depart: $('#user_depart').val(), user_phone: $('#user_phone').val(),
+			user_email: $('#user_email').val(), user_title: $('#user_title').val(),
+			csrfmiddlewaretoken:$('input[name="csrfmiddlewaretoken"]').val()
+		}
+		$.ajax({
+			url: '/nstd/manage/userUpdate',
+			type: 'post',
+			data: postData,
+			dataType: 'json',
+			success: function(data){
+				if(data.result){
+					obj.update({
+				      user_name: postData.user_name
+				      ,user_depart: postData.user_depart
+				      ,user_phone: postData.user_phone
+				      ,user_email: postData.user_email
+				      ,user_title: postData.user_title
+				    });
+				    layer.close(index)
+				    layer.msg('更新成功',{icon:1})
+				    reset()
+				}else{
+					reset()
+				}
+			}
+		})
+	}
+
+	//用户删除
+	function userDelete (user_num,obj,index){
+		$.ajax({
+			url: '/nstd/manage/userDelete',
+			type: 'get',
+			data: {user_num: user_num},
+			dataType: 'json',
+			success: function(data){
+				obj.del();
+				layer.close(index);
+				layer.msg('删除成功',{icon:1})
+			},
+			error: function(xmlHq,status,errorThrows){
+				console.log(xmlHq)
+			}
+		})
+	}
+
+	//获取所有部门
+	function getDepart (){
+		var str = '<option value="">请选择所属部门</option>'
+		$.ajax({
+			url: '/nstd/baseinfo/search_depart',
+			type: 'get',
+			dataType: 'json',
+			async:false,
+			success: function(data){
+				let depart_list = data.depart_list
+				for(var i=0;i<depart_list.length;i++){
+					let depart = depart_list[i]
+					str += ('<option value = ' + depart.id + '>' + depart.d_name + '</option>')
+				}
+				$('#user_depart').html(str)
+				form.render('select')
+			},
+			error:function(xmlHq,status,errorThrows){
+				console.log(status)
+			}
+		});
+	}
+
+	//重置弹窗数据
+	function reset(){
+		$('#user_num').val('')
+		$('#user_name').val('')
+		$('#user_depart').val('')
+		$('#user_phone').val('')
+		$('#user_email').val('')
+		$('#user_title').val('')
+		form.render('select')
+	}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="layui-form mart20">
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产番号:</label>
+	      <div class="layui-input-inline">
+	      	<input type="hidden" id="a_action_id">
+	        <input id="a_cd" class="layui-input" autocomplete="off" onkeyup="get_edit_zj()">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产名称:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_name" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+	      <label class="layui-form-label">供应商确认:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_charge" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产状态:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_action_state">
+	          <option value=''>请选择资产状态</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	          <option>F</option>
+	          <option>G</option>
+	          <option>H</option>
+	          <option>I</option>
+	          <option>J</option>
+	          <option>K</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+	      <label class="layui-form-label">供应商:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_supplier" class="layui-input" autocomplete="off" placeholder="支给供应商（备注）">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">行为状态:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_type" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+			<button class="layui-btn marl110" onclick="edit_zj()">确定修改</button>
+			<button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	var $ = ''
+	var form = ''
+	layui.use(['jquery', 'form'], function(){
+		$ = layui.jquery;
+		form = layui.form;
+
+		form.render('select');
+	});
+
+	function get_edit_zj(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			if(a_cd == ''){
+				layer.alert('资产番号不能为空!',{icon:7})
+				return
+			}
+			$.ajax({
+				url: '/nstd/edit/get_edit_zj',
+				type: 'get',
+				data: {a_cd:a_cd},
+				dataType: 'JSON',
+				success: function(data){
+					$('#a_type_cd').val(data.a_type_cd)
+					$('#a_name').val(data.a_name)
+					$('#a_action_state').val(data.a_action_state)
+					$('#a_action_charge').val(data.a_action_charge)
+					$('#a_action_supplier').val(data.a_action_supplier)
+					$('#a_action_type').val(data.a_action_type)
+					$('#a_action_id').val(data.a_action_id)
+					form.render('select')
+					$('#a_cd').attr('readonly',true)
+				}
+			});
+		}
+	}
+
+	function edit_zj(){
+		let a_action_state = $('#a_action_state').val()
+		let a_action_charge = $('#a_action_charge').val()
+		let a_action_supplier = $('#a_action_supplier').val()
+		let a_action_type = $('#a_action_type').val()
+		let a_action_id = $('#a_action_id').val()
+		if(a_action_type != '已支给'){
+			layer.alert('该资产不处于在库状态',{icon:2})
+			return
+		}
+		let data = {
+			a_action_state:a_action_state,a_action_charge:a_action_charge,
+			a_action_supplier:a_action_supplier,a_action_id:a_action_id,
+			csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+		}
+		$.ajax({
+			url: '/nstd/edit/edit_zj',
+			type: 'post',
+			data: data,
+			dataType: 'JSON',
+			success: function(data){
+				if(data.result){
+					layer.msg('修改成功',{icon:1})
+					reset()
+				}
+			}
+		});
+	}
+
+	function reset(){
+		$('#a_cd').removeAttr('readonly').focus()
+		$('input[name!="csrfmiddlewaretoken"]').val('')
+		$('select').val('')
+		$('textarea').val('')
+		form.render('select')
+	}
+
+</script>
+{% endblock %}

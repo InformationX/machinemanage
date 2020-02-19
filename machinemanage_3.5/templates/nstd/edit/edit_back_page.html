@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="layui-form mart20">
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产番号:</label>
+	      <div class="layui-input-inline">
+	      	<input type="hidden" id="a_action_id">
+	        <input id="a_cd" class="layui-input" autocomplete="off" onkeyup="get_edit_back()">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产型号:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_type_cd" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	      <div class="xing" style="visibility: hidden;">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产名称:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_name" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">退库人员:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_user" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产状态:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_action_state">
+	          <option value=''>请选择资产状态</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	          <option>F</option>
+	          <option>G</option>
+	          <option>H</option>
+	          <option>I</option>
+	          <option>J</option>
+	          <option>K</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+		<div class="layui-inline">
+	      <label class="layui-form-label">折旧类别:</label>
+	      <div class="fl h36_w190">
+	        <select id="a_action_category">
+	          <option value="">请选择资产折旧类别</option>
+	          <option>A</option>
+	          <option>B</option>
+	          <option>C</option>
+	          <option>D</option>
+	          <option>E</option>
+	        </select>
+	      </div>
+	      <div class="xing marl10">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+	      <label class="layui-form-label">退库位置:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_loc" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">主管确认:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_charge" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">动作类型:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_type" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item layui-form-text">
+	    <label class="layui-form-label">备注信息:</label>
+	    <div class="layui-input-block" style="width:530px">
+	      <textarea id="a_action_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+			<button class="layui-btn marl110" onclick="edit_back()">确定修改</button>
+			<button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+		</div>
+	</div>
+</div>
+
+<script>
+	var $ = ''
+	var form = ''
+	layui.use(['jquery', 'form'], function(){
+		$ = layui.jquery;
+		form = layui.form;
+
+		form.render('select');
+	});
+
+	function get_edit_back(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			if(a_cd == ''){
+				layer.alert('资产番号不能为空!',{icon:7})
+				return
+			}
+			$.ajax({
+				url: '/nstd/edit/get_edit_back',
+				type: 'get',
+				data: {a_cd:a_cd},
+				dataType: 'JSON',
+				success: function(data){
+					$('#a_type_cd').val(data.a_type_cd)
+					$('#a_name').val(data.a_name)
+					$('#a_action_user').val(data.a_action_user)
+					$('#a_action_state').val(data.a_action_state)
+					$('#a_action_loc').val(data.a_action_loc)
+					$('#a_action_category').val(data.a_action_category)
+					$('#a_action_charge').val(data.a_action_charge)
+					$('#a_action_remark').val(data.a_action_remark)
+					$('#a_action_type').val(data.a_action_type)
+					$('#a_action_id').val(data.a_action_id)
+					form.render('select')
+					$('#a_cd').attr('readonly',true)
+				}
+			});
+		}
+	}
+
+	function edit_back(){
+		let a_cd = $('#a_cd').val()
+		let a_action_user = $('#a_action_user').val()
+		let a_action_loc = $('#a_action_loc').val()
+		let a_action_state = $('#a_action_state').val()
+		let a_action_charge = $('#a_action_charge').val()
+		let a_action_category = $('#a_action_category').val()
+		let a_action_remark = $('#a_action_remark').val()
+		let a_action_type = $('#a_action_type').val()
+		let a_action_id = $('#a_action_id').val()
+		if(a_action_type != '在库'){
+			layer.alert('该资产不处于在库状态',{icon:2})
+			return
+		}
+		let data = {
+			a_action_user:a_action_user,a_action_loc:a_action_loc,a_action_state:a_action_state,
+			a_action_charge:a_action_charge,a_action_category:a_action_category,a_action_remark:a_action_remark,
+			a_action_id:a_action_id,csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+		}
+		$.ajax({
+			url: '/nstd/edit/edit_back',
+			type: 'post',
+			data: data,
+			dataType: 'JSON',
+			success: function(data){
+				if(data.result){
+					layer.msg('修改成功',{icon:1})
+					reset()
+				}
+			}
+		});
+	}
+
+	function reset(){
+		$('#a_cd').removeAttr('readonly').focus()
+		$('input[name!="csrfmiddlewaretoken"]').val('')
+		$('select').val('')
+		$('textarea').val('')
+		form.render('select')
+	}
+
+</script>
+{% endblock %}

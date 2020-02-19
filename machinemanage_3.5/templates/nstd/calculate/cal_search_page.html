@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .v_hid{visibility: hidden}
+</style>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>计量信息查询</legend>
+</fieldset>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <label class="layui-form-label">资产番号:</label>
+    <div class="layui-input-inline">
+      <input id="a_cd" placeholder="请输入资产番号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing">*</div>
+  </div>
+  <div class="layui-inline">
+  	<label class="layui-form-label">型号:</label>
+    <div class="layui-input-inline">
+      <input id="a_type_cd" placeholder="请输入型号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing v_hid">*</div>
+  </div>
+  <div class="layui-inline">
+    <label class="layui-form-label">计量证书:</label>
+    <div class="layui-input-inline">
+      <input id="c_certificate" placeholder="请输入计量证书号" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing v_hid">*</div>
+  </div>
+</div>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <label class="layui-form-label">计量日期:</label>
+    <div class="layui-input-inline">
+      <input id="c_date" placeholder="计量日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing v-hid">*</div>
+  </div>
+  <div class="layui-inline">
+    <label class="layui-form-label">到期日期:</label>
+    <div class="layui-input-inline">
+      <input id="c_end_date" placeholder="到期日期" autocomplete="off" class="layui-input">
+    </div>
+    <div class="xing v-hid">*</div>
+  </div>
+  <div class="layui-inline">
+    <div style="margin-left: 110px;min-height: 45px;">
+      <button class="layui-btn" onclick="get_calculate_data()" style="width:190px">点击查询</button>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 10px">
+	<table id="demo"></table>
+</div>
+
+<div class="layui-form-item">
+  <div class="layui-inline">
+    <div style="margin-left: 10px;min-height: 45px;">
+      <button class="layui-btn" onclick="calculate_export()" style="width:190px">数据导出</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var table = ''
+var laydate = ''
+var $ = ''
+var layer = ''
+var tableIns = ''
+
+layui.use(['table','jquery','laydate', 'layer'], function(){
+  table = layui.table;
+  laydate = layui.laydate
+  $ = layui.jquery
+  layer = layui.layer
+
+  laydate.render({
+    elem: '#c_date',
+    type: 'month'
+  });
+
+  laydate.render({
+    elem: '#c_end_date',
+    type: 'month'
+  });
+  
+  tableIns = table.render({
+    elem: '#demo'
+    ,url: '/nstd/calculate/get_cal_data' //数据接口
+    ,width: 'auto'
+    ,limit: 100
+    ,page: false //开启分页
+    ,limits: [100,200,300,400,500,600,700,800,900,1000]
+    ,cols: [[ //表头
+      {type: 'numbers', title: '序号', width:80}
+      ,{field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_type_cd', title: '资产型号', width:180}
+      ,{field: 'a_name', title: '资产名称', width:230}
+      ,{field: 'a_self_cd', title: '资产编号', width:230}
+      ,{field: 'a_fuselage_cd', title: '机身号码', width:230}
+      ,{field: 'c_method', title: '计量方式', width:100}
+      ,{field: 'c_date', title: '计量日期', width:120}
+      ,{field: 'c_end_date', title: '到期日期', width:120}
+      ,{field: 'a_action_depart', title: '使用部门', width:120}
+      ,{field: 'c_status', title: '资产状态', width:120}
+      ,{field: 'c_certificate', title: '计量证书', width:120}
+      ,{field: 'c_record_time', title: '记录时间', width:170}
+    ]],
+    where:{}
+  });
+});
+
+function get_calculate_data(){
+	let a_cd = $('#a_cd').val()
+	let a_type_cd = $('#a_type_cd').val()
+	let c_date = $('#c_date').val()
+	let c_end_date = $('#c_end_date').val()
+  let c_certificate = $('#c_certificate').val()
+
+	data = {a_cd:a_cd,a_type_cd:a_type_cd,c_date:c_date
+          ,c_end_date:c_end_date,c_certificate:c_certificate
+    }
+	tableIns.reload({
+    where: data
+  });
+	
+}
+
+//导出计量数据
+function calculate_export(){
+  let c_date = $('#c_date').val()
+  let c_end_date = $('#c_end_date').val()
+  let a_cd = $('#a_cd').val()
+  let a_type_cd = $('#a_type_cd').val()
+  let c_certificate = $('#c_certificate').val()
+
+  var a = document.createElement('a')
+  var url = '/nstd/calculate/cal_export?'
+  if(a_cd != ''){
+    url += '&a_cd=' + a_cd
+  }
+  if(a_type_cd != ''){
+    url += '&a_type_cd=' + a_type_cd
+  }
+  if(c_date != ''){
+    url += '&c_date='  + c_date
+  }
+  if(c_end_date != ''){
+    url += '&c_end_date=' + c_end_date
+  }
+  if(c_certificate != ''){
+    url += '&c_certificate=' + c_certificate
+  }
+  a.href = url
+  a.click()
+  }
+</script>
+{% endblock %}

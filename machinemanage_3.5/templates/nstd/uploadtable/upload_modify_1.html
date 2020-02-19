@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 设备修改Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_modify_1()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+  <div style="height:80px"></div>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var tableIns = ''
+	var tmp_file = '{{ tmp_file }}'
+	var hasUploaded = false
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		tableIns = table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/nstd/baseinfo/get_modify_1_csv_data' //数据接口
+	      ,cols: [[ //表头
+	      	{type: 'numbers', title: '序号', width:60}
+	        ,{field: 'a_cd', title: '资产番号', width:100}
+	        ,{field: 'a_type_cd', title: '资产型号', width:130}
+	        ,{field: 'a_name', title: '资产名称', width:250}
+	        ,{field: 'a_action_type', title: '库存状态', width:90}
+	        ,{field: 'a_action_depart', title: '当前部门', width:120, edit: true}
+	        ,{field: 'a_action_loc', title: '资产位置', width:150, edit: true}
+	        ,{field: 'a_action_model', title: '使用机种', width:100, edit: true}
+	        ,{field: 'a_action_remark', title: '备注信息', width:100, edit: true}
+	        ,{field: 'a_action_id', title: '资产行为id', hide: true}
+	        ,{title:'操作',width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {tmp_file:tmp_file}
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	});
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let tmp_list = []
+			tmp_list[0] = $(this).find('td[data-field="a_cd"]').text()
+			tmp_list[1] = $(this).find('td[data-field="a_action_depart"]').text()
+			tmp_list[2] = $(this).find('td[data-field="a_action_loc"]').text()
+			tmp_list[3] = $(this).find('td[data-field="a_action_model"]').text()
+			tmp_list[4] = $(this).find('td[data-field="a_action_remark"]').text()
+			tmp_list[5] = $(this).find('td[data-field="a_action_id"]').text()
+
+			if(tmp_list[0] == ''){
+				alert('第' + (index + 1) + '行资产番号输入不能为空!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}else if(tmp_list[1] == ''){
+				alert('第' + (index + 1) + '行当前部门输入不能为空!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}else if(tmp_list[2] == ''){
+				alert('第' + (index + 1) + '行资产位置输入不能为空!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}else if(tmp_list[3] == ''){
+				alert('第' + (index + 1) + '行资产使用机种不能为空!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}
+			table_data.push(tmp_list)
+		});
+		if(!flag){
+			return []
+		}else{
+			return table_data
+		}
+	}
+
+	//点击上传按钮开始上传
+	function upload_modify_1(){
+		if(hasUploaded){
+			layer.alert('您已经成功上传一次，不能重复上传！',{title:'温馨提示',icon:7})
+			return
+		}
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		if(table_data.length > 0){
+			if(table_data.length > 500){
+				layer.alert('上传数量单次不能超过500条！',{title:'温馨提示',icon:7})
+				return
+			}else{
+				$.ajax({
+					url: '/nstd/baseinfo/upload_modify_1',
+					type: 'post',
+					dataType: 'json',
+					data: {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken},
+					success: function(data){
+						alert(`批量上传成功,上传数量:${data.num}`)
+						hasUploaded = true
+					},
+					error: function(xmlHq,status,errorThrows){
+						console.log(errorThrows)
+					}
+				});
+			}
+		}else{
+			layer.alert('无上传数据,或上传数据是不在库!',{title:'温馨提示',icon:7})
+		}
+	}
+
+</script>
+
+{% endblock %}

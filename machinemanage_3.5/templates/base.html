@@ -1,0 +1,64 @@
+{% load staticfiles %}
+<html>
+  <head>
+	<meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="{% static 'plugins/layui/css/layui.css' %}" media="all" />
+    <link rel="stylesheet" href="{% static 'plugins/font-awesome/css/font-awesome.min.css' %}" media="all" />
+    <link rel="stylesheet" href="{% static 'src/css/app.css' %}" media="all" />
+    <link rel="stylesheet" href="{% static 'src/css/themes/default.css' %}" media="all" id="skin" kit-skin />
+    <link rel="stylesheet" href="{% static 'css/common.css' %}"/>
+	  <title>{% block title %}{% endblock %}</title>
+  </head>
+  <!--
+  <style>
+    @font-face {
+      /*字体大全网址：http://www.keyin.cn/font/ */
+      font-family: 'iconfont';
+      src: url("{% static 'fonts/iconfont.eot' %}");
+      src: url("{% static 'fonts/iconfont.eot?#iefix' %}") format('embedded-opentype'),
+      url("{% static 'fonts/iconfont.woff' %}") format('woff'),
+      url("{% static 'fonts/iconfont.ttf' %}") format('truetype'),
+      url("{% static 'fonts/iconfont.svg#iconfont' %}") format('svg');
+    }
+    .iconfont{
+      font-family:"iconfont" !important;
+      font-size:16px;font-style:normal;
+      -webkit-font-smoothing: antialiased;
+      -webkit-text-stroke-width: 0.2px;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    -->
+  </style>
+  <body class="kit-theme">
+    <script src="{% static 'plugins/layui/layui.js' %}"></script>
+    <script src="{% static 'js/common.js' %}"></script>
+    <script type="text/javascript">
+      
+      layui.use('jquery',function(){
+        var $ = layui.jquery
+        $(function(){
+          $.ajaxSetup({
+            layerIndex:-1,
+            beforeSend: function () { //插件加载前
+              this.layerIndex = layer.load(2, { shade: [0.01, '#fff'] });
+            },
+            complete: function () { //完成加载后执行
+              layer.close(this.layerIndex); //完成加载后关闭loading
+            },
+            error: function () { //报错时执行
+              layer.alert('显示异常，请刷新后重试', {
+                skin: 'layui-layer-molv'
+                , closeBtn: 0
+                , shift: 4 //动画类型
+                });
+              }
+          });
+        });
+      });
+
+    </script>
+    {% csrf_token %}
+  	{% block content %}{% endblock %}
+  </body>
+</html>

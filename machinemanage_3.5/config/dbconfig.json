@@ -1,0 +1,22 @@
+{
+  "databases":[
+    {
+      "MODEL":"asset_b",
+      "ENGINE": "django.db.backends.postgresql_psycopg2",
+      "NAME": "asset_b",
+      "USER": "pqm",
+      "PASSWORD": "dbuser",
+      "HOST": "172.27.42.14",
+      "PORT": "5432"
+    },
+    {
+      "MODEL":"asset_nstd",
+      "ENGINE": "django.db.backends.postgresql_psycopg2",
+      "NAME": "asset_nstd",
+      "USER": "pqm",
+      "PASSWORD": "dbuser",
+      "HOST": "172.27.32.30",
+      "PORT": "5432"
+    }
+  ]
+}

@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .xing{
+  	color:#c00;
+  	float: left;
+    display: block;
+    line-height: 25px;
+    margin-right: 10px;
+    padding: 9px 0px !important;
+  }
+  .atitle{margin:20px 10px}
+</style>
+
+<body>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产归还</legend>
+</fieldset>
+
+<form class="layui-form mart10">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input type="tel" name="phone" lay-verify="required|phone" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input type="text" name="email" lay-verify="email" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号:</label>
+      <div class="layui-input-inline">
+        <input type="text" name="email" lay-verify="email" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">当前位置:</label>
+      <div style="height:36px;width:190px;float:left">
+        <select name="city" lay-verify="required">
+          <option value=""></option>
+          <option value="0">位置1</option>
+          <option value="1">位置2</option>
+          <option value="2">位置3</option>
+        </select>
+      </div>
+      <div class="xing" style="margin-left:10px">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">状态:</label>
+      <div style="height:36px;width:190px;float:left">
+        <select name="city" lay-verify="required">
+          <option value=""></option>
+          <option value="0">OK</option>
+          <option value="1">NG</option>
+          <option value="2">IDLE</option>
+        </select>
+      </div>
+      <div class="xing" style="margin-left:10px">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体资产号:</label>
+      <div class="layui-input-inline">
+        <input type="tel" name="url" lay-verify="url" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">货架号:</label>
+      <div class="layui-input-inline">
+        <input type="text" name="number" lay-verify="required|number" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体序列号:</label>
+      <div class="layui-input-inline">
+        <input type="text" name="date" id="date" lay-verify="date" placeholder="" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" lay-submit="" lay-filter="demo1">确认归还</button>
+    </div>
+  </div>
+</form>
+<script>
+	layui.use(['form', 'layedit', 'laydate'], function(){
+	  var form = layui.form
+	  ,layer = layui.layer
+	  ,layedit = layui.layedit
+	  ,laydate = layui.laydate;
+	  
+	  //监听提交
+	  form.on('submit(demo1)', function(data){
+	    layer.alert(JSON.stringify(data.field), {
+	      title: '最终的提交信息'
+	    })
+	    return false;
+	  });
+	});
+</script>
+{% endblock %}
+</body>
+</html>

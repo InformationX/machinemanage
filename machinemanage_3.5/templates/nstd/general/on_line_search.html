@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .v_hid{visibility: hidden}
+</style>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>在线信息查询</legend>
+</fieldset>
+
+<div class="layui-form">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" placeholder="请输入资产番号" autocomplete="off" class="layui-input" onkeyup="get_online_data()">
+      </div>
+      <div class="xing v_hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产位置:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_loc" placeholder="请输入资产位置" autocomplete="off" class="layui-input" onkeyup="get_online_data()">
+      </div>
+      <div class="xing v_hid">*</div>
+    </div>
+    
+    <div class="layui-inline">
+      <div style="min-height: 45px;">
+        <button class="layui-btn" onclick="get_online_data()" style="width:190px">点击查询</button>
+      </div>
+    </div>
+
+  </div>
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">起始日期:</label>
+      <div class="layui-input-inline">
+        <input id="startDate" placeholder="请输入起始日期" autocomplete="off" class="layui-input" onkeyup="get_online_data()">
+      </div>
+      <div class="xing v_hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">结束日期:</label>
+      <div class="layui-input-inline">
+        <input id="endDate" placeholder="请输入结束日期" autocomplete="off" class="layui-input" onkeyup="get_online_data()">
+      </div>
+      <div class="xing v_hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <div style="min-height: 45px;">
+        <button class="layui-btn" onclick="online_export()" style="width:190px">数据导出</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:0 10px">
+  	<table id="demo"></table>
+  </div>
+
+</div>
+
+<script>
+var table = ''
+var $ = ''
+var layer = ''
+var tableIns = ''
+var is_hidden = false
+var laydate = ''
+var dept_name = '{{request.session.dept_name}}'
+if(dept_name != '设备购买部'){
+  is_hidden = true
+}
+
+layui.use(['table','jquery', 'layer', 'laydate'], function(){
+  table = layui.table;
+  $ = layui.jquery
+  layer = layui.layer
+  laydate = layui.laydate;
+
+  laydate.render({
+    elem: '#startDate',
+    type: 'date'
+  });
+
+  laydate.render({
+    elem: '#endDate',
+    type: 'date'
+  });
+  
+});
+
+//获取在库信息
+function get_online_data(){
+
+  /*
+  let keyCode = window.event.keyCode
+  if(keyCode == 13){
+    let a_cd = $('#a_cd').val()
+    let a_fuselage_cd = $('#a_fuselage_cd').val()
+    let a_action_loc = $('#a_action_loc').val()
+
+    data = {a_cd:a_cd, a_fuselage_cd:a_fuselage_cd, a_action_loc:a_action_loc}
+    tableIns.reload({
+      where: data
+    });
+  }
+  */
+
+  let a_cd = $('#a_cd').val()
+  let a_action_loc = $('#a_action_loc').val()
+  let startDate = $('#startDate').val()
+  let endDate = $('#endDate').val()
+
+  tableIns = table.render({
+    elem: '#demo'
+    ,url: '/nstd/general/get_online_data' //数据接口
+    ,limit: 100
+    ,page: true //开启分页
+    ,limits: [100,200,300,400,500,600,700,800,900,1000]
+    ,cols: [[ //表头
+      {type: 'numbers', title: '序号', width:100}
+      ,{field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_self_cd', title: '编号', width:100}
+      ,{field: 'a_name', title: '资产名称', width:250}
+      
+      ,{field: 'a_type_cd', title: '资产型号', width:150}
+      ,{field: 'a_fuselage_cd', title: '机身号码', width: 180}
+      ,{field: 'a_amount', title: '单位', width: 60}
+
+      ,{field: 'a_price', title: '单价', width: 100, hide: is_hidden}
+      ,{field: 'a_currency', title: '币种', width: 80, hide: is_hidden}
+      ,{field: 'a_out_time', title: '出厂时间', width: 110}
+      ,{field: 'a_purchase_time', title: '购入时间', width: 110}
+
+      ,{field: 'a_brand', title: '品牌', width: 100}
+      ,{field: 'a_supplier', title: '供应商', width: 230, hide: is_hidden}
+      ,{field: 'a_action_state', title: '状态', width: 60}
+      ,{field: 'a_action_category', title: '折旧类别', width: 60}
+      ,{field: 'a_action_depart', title: '当前部门', width: 100}
+      ,{field: 'a_action_model', title: '使用机种', width: 100}
+      ,{field: 'a_action_loc', title: '当前位置', width: 130}
+
+      ,{field: 'a_model', title: '购入机种', width: 100}
+      ,{field: 'a_project_cd', title: '工位(工程)', width: 100}
+      ,{field: 'a_funds_type', title: '经费类别', width: 120}
+
+      ,{field: 'a_record_time', title: '记录时间', width: 160}
+      ,{field: 'a_opr_user', title: '操作员', width: 120}
+      ,{field: 'a_action_remark', title: '备注', width: 150}
+    ]],
+    where: {
+      a_cd: a_cd, a_action_loc: a_action_loc, startDate: startDate, endDate: endDate
+    }
+  });
+
+}
+
+//数据导出
+function online_export(){
+  var a_cd = $('#a_cd').val()
+  var a_action_loc = $('#a_action_loc').val()
+  var startDate = $('#startDate').val()
+  var endDate = $('#endDate').val()
+
+  var a = document.createElement('a')
+  var url = `/nstd/general/online_export?a_cd=${a_cd}&a_action_loc=${a_action_loc}&startDate=${startDate}&endDate=${endDate}`
+  a.href = url
+  a.click()
+}
+
+</script>
+{% endblock %}

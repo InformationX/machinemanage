@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 设备入库信息Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_add()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var tmp_file = '{{ tmp_file }}'
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/nstd/basefunc/get_add_csv_data' //数据接口
+	      ,cols: [[ //表头
+	      	{type:'numbers', title: '序号', width:60, edit: false}
+	        ,{field: 'a_cd', title: '资产番号', width:100, edit: true}
+	        ,{field: 'a_self_cd', title: '编号', width:100, edit: true}
+	        ,{field: 'a_name', title: '资产名称',width:220, edit: true}
+	        ,{field: 'a_type_cd', title: '型号',width:130, edit: true}
+	        ,{field: 'a_fuselage_cd', title: '机身号',width:120, edit: true}
+	        ,{field: 'a_amount', title: '单位(台,个)',width:100, edit: true}
+	        ,{field: 'a_price', title: '单价',width:90, edit: true, hide: false}
+	        ,{field: 'a_currency', title: '币种',width:70, edit: true}
+	        ,{field: 'a_out_time', title: '出厂日期',width:170, edit: true}
+	        ,{field: 'a_purchase_time', title: '购入日期',width:170, edit: true}
+	        ,{field: 'a_project_cd', title: '工位代码',width:100, edit: true}
+	        ,{field: 'a_depart', title: '所属部门',width:120, edit: true}
+			,{field: 'a_brand', title: '品牌',width:100, edit: true}
+			,{field: 'a_supplier', title: '供应商',width:200, edit: true}
+			,{field: 'a_loc_cd', title: '存放位置',width:100, edit: true}
+			,{field: 'a_status', title: '状态',width:80, edit: true}
+			,{field: 'a_category', title: '资产分类',width:100, edit: true}
+			,{field: 'a_model', title: '机种',width:70, edit: true}
+			,{field: 'a_funds_type', title: '经费类别',width:120, edit: true}
+			,{field: 'a_budget', title: '预算号',width:100, edit: true}
+			,{field: 'a_referendum', title: '请示书号',width:120, edit: true}
+			,{field: 'a_po_cd', title: 'PO号',width:120, edit: true}
+			,{field: 'a_sap_cd', title: 'SAP番号',width:120, edit: true}
+			,{field: 'a_b_nstd', title: '资产类型',width:100, edit: true}
+			,{field: 'a_need_cal', title: '是否计量',width:100, edit: true}
+			,{field: 'a_remark', title: '备注信息',width:200, edit: true}
+	        ,{title:'操作',width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {tmp_file:tmp_file}
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	})
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		isRepeat = false
+		$('#uploadwrap tbody tr').each(function(index){
+			let tmp_list = []
+			a_cd =  $(this).find('td[data-field="a_cd"]').text()
+			tmp_list[0] = a_cd
+			tmp_list[1] = $(this).find('td[data-field="a_self_cd"]').text()
+			tmp_list[2] = $(this).find('td[data-field="a_name"]').text()
+			tmp_list[3] = $(this).find('td[data-field="a_type_cd"]').text()
+			tmp_list[4] = $(this).find('td[data-field="a_fuselage_cd"]').text()
+			tmp_list[5] = $(this).find('td[data-field="a_amount"]').text()
+			tmp_list[6] = $(this).find('td[data-field="a_price"]').text()
+			tmp_list[7] = $(this).find('td[data-field="a_currency"]').text()
+			tmp_list[8] = $(this).find('td[data-field="a_out_time"]').text()
+			tmp_list[9] = $(this).find('td[data-field="a_purchase_time"]').text()
+			tmp_list[10] = $(this).find('td[data-field="a_project_cd"]').text()
+			tmp_list[11] = $(this).find('td[data-field="a_depart"]').text()
+			tmp_list[12] = $(this).find('td[data-field="a_brand"]').text()
+			tmp_list[13] = $(this).find('td[data-field="a_supplier"]').text()
+			tmp_list[14] = $(this).find('td[data-field="a_loc_cd"]').text()
+			tmp_list[15] = $(this).find('td[data-field="a_status"]').text()
+			tmp_list[16] = $(this).find('td[data-field="a_category"]').text()
+			tmp_list[17] = $(this).find('td[data-field="a_model"]').text()
+			tmp_list[18] = $(this).find('td[data-field="a_funds_type"]').text()
+			tmp_list[19] = $(this).find('td[data-field="a_budget"]').text()
+			tmp_list[20] = $(this).find('td[data-field="a_referendum"]').text()
+			tmp_list[21] = $(this).find('td[data-field="a_po_cd"]').text()
+			tmp_list[22] = $(this).find('td[data-field="a_sap_cd"]').text()
+			tmp_list[23] = $(this).find('td[data-field="a_b_nstd"]').text()
+			let a_need_cal = $(this).find('td[data-field="a_need_cal"]').text()
+
+			if(a_need_cal == '需要计量'){
+				a_need_cal = 1
+			}else if(a_need_cal == '不需要计量'){
+				a_need_cal = 0
+			}
+			tmp_list[24] = a_need_cal
+			tmp_list[25] = $(this).find('td[data-field="a_remark"]').text()
+
+			for(let i=0;i<table_data.length;i++){
+				if(a_cd == table_data[i][0]){
+					layer.alert(`第${i+1}行和第${index+1}行资产番号:${a_cd}重复`,{title:'温馨提示',offset:'200px',icon:7});
+					isRepeat = true
+					break
+				}
+			}
+
+			table_data.push(tmp_list)
+		});
+
+		if(!isRepeat){
+			return table_data
+		}else{
+			return []
+		}
+	}
+
+	//点击上传按钮开始上传
+	function upload_add(){
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		if(table_data.length > 0){
+			$.ajax({
+				url: '/nstd/basefunc/upload_add',
+				type: 'post',
+				dataType: 'json',
+				data: {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken},
+				success: function(data){
+					if(data.result){
+						layer.msg('批量上传成功,上传数量:' + data.num, {icon:1,offset:'200px'})
+						//alert('批量上传成功,上传数量:' + data.num)
+					}else{
+						layer.alert(data.msg,{title:'温馨提示',offset:'200px',icon:2,time:5000})
+						//alert('操作失败,请先检查出厂日期和购入日期格式是否正确，以及资产番号、机身号是否重复')
+					}
+				},
+				error: function(xmlHq,status,errorThrows){
+					console.log(errorThrows)
+				}
+			});
+		}
+	}
+
+</script>
+
+{% endblock %}

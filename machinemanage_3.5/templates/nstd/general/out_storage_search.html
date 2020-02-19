@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .v-hid{visibility: hidden}
+</style>
+
+ <fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>出库信息查询</legend>
+</fieldset>
+
+<div class="layui-form">
+  <div class="layui-form-item" style="width: 1000px">
+    <div class="layui-inline">
+      <label class="layui-form-label">起始日期:</label>
+      <div class="layui-input-inline">
+        <input id="startDate" placeholder="起始日期" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">结束日期:</label>
+      <div class="layui-input-inline">
+        <input id="endDate" placeholder="终止日期" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <div class="marl100" style="min-height: 45px;">
+        <button class="layui-btn" onclick="asset_out_search()" style="width:190px">点击查询</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item" style="width: 1150px">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" placeholder="请输入资产番号" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">位置代码:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_loc" placeholder="位置代码" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <div class="marl100" style="min-height: 45px;">
+        <button class="layui-btn w190" onclick="out_export()">数据下载</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 10px">
+	<table id="demo"></table>
+</div>
+
+<script>
+var table = ''
+var tableIns = ''
+var laydate = ''
+var $ = ''
+var form = ''
+
+var is_hidden = false
+var authority_level = '{{request.session.authority_level}}'
+var dept_name = '{{request.session.dept_name}}'
+if(authority_level != 1 && dept_name != '设备购买部'){
+  is_hidden = true
+}
+
+layui.use(['table','jquery','laydate','form'], function(){
+  table = layui.table;
+  laydate = layui.laydate
+  $ = layui.jquery
+  form = layui.form
+
+  let startDate = one_month_ago()
+  let endDate = getToday()
+
+  laydate.render({
+    elem: '#startDate',
+    value: startDate
+  });
+
+  laydate.render({
+    elem: '#endDate',
+    value: endDate
+  });
+  
+});
+
+//出库信息查询
+function asset_out_search(){
+  /*
+  let startDate = $('#startDate').val()
+  let endDate = $('#endDate').val()
+  let a_cd = $('#a_cd').val()
+  let a_self_cd = $('#a_self_cd').val()
+  let a_type_cd = $('#a_type_cd').val()
+  let a_action_loc = $('#a_action_loc').val()
+  let a_action_depart = $('#a_action_depart').val()
+  let a_action_state = $('#a_action_state').val()
+
+  let id_list = ['startDate','endDate']
+  let vde = vde_is_null(id_list)
+  if(vde){
+    data = {
+      startDate:startDate,endDate:endDate,a_cd:a_cd,a_self_cd:a_self_cd,a_type_cd:a_type_cd,
+      a_action_loc:a_action_loc,a_action_depart:a_action_depart,a_action_state:a_action_state
+    }
+    tableIns.reload({
+      where: data,
+    });
+  }
+  */
+
+  let a_cd = $('#a_cd').val()
+  let a_action_loc = $('#a_action_loc').val()
+  let startDate = $('#startDate').val()
+  let endDate = $('#endDate').val()
+
+  tableIns = table.render({
+    elem: '#demo'
+    ,url: '/nstd/general/get_out_storage_data' //数据接口
+    ,width:'1800'
+    ,page: true //开启分页
+    ,limit:100
+    ,limits: [100,200,300,400,500,600,700,800,900,1000]
+    ,cols: [[ //表头
+      {type: 'numbers', title: '序号', width:80}
+      ,{field: 'a_cd', title: '资产番号', width:100}
+      ,{field: 'a_self_cd', title: '编号', width:100}
+      ,{field: 'a_name', title: '名称', width:230}
+
+      ,{field: 'a_type_cd', title: '型号', width:120}
+      ,{field: 'a_fuselage_cd', title: '机身号', width:150}
+      ,{field: 'a_amount', title: '单位', width:60}
+
+      ,{field: 'a_price', title: '单价', width:100, hide: is_hidden}
+      ,{field: 'a_currency', title: '币种', width:70, hide: is_hidden}
+      ,{field: 'a_out_time', title: '出厂时间', width:120}
+
+      ,{field: 'a_purchase_time', title: '购入时间', width:120} 
+      ,{field: 'a_brand', title: '品牌', width:80} 
+      ,{field: 'a_supplier', title: '供应商', width: 220}
+
+      ,{field: 'a_action_state', title: '状态', width:60}
+      ,{field: 'a_origin_loc', title: '原始位置', width: 120}
+      ,{field: 'a_action_loc', title: '当前位置', width: 120}
+      ,{field: 'a_model', title: '机种', width: 100}
+      
+      ,{field: 'a_action_depart', title: '领用部门', width: 100}
+      ,{field: 'a_action_user', title: '领用人员', width: 100}
+      ,{field: 'a_action_charge', title: '主管确认', width: 100}
+
+      ,{field: 'a_budget', title: '预算号', width: 100}
+      ,{field: 'a_referendum', title: '请示书号', width: 100}
+      ,{field: 'a_po_cd', title: 'PO书号', width: 150}
+
+      ,{field: 'a_sap_cd', title: 'SAP番号', width: 150}
+      ,{field: 'a_project_cd', title: '工程代码', width: 100}
+      ,{field: 'a_funds_type', title: '经费类别', width: 120}
+      
+      ,{field: 'a_opr_user', title: '操作员', width: 80}
+      ,{field: 'a_record_time', title: '记录时间', width: 180}
+      ,{field: 'a_action_remark', title: '备注信息', width: 200}
+    ]]
+    ,where:{
+      a_cd: a_cd, a_action_loc: a_action_loc, startDate: startDate, endDate: endDate
+    }
+  });
+
+}
+
+//导出出库数据
+function out_export(){
+  var a_cd = $('#a_cd').val()
+  var a_action_loc = $('#a_action_loc').val()
+  var startDate = $('#startDate').val()
+  var endDate = $('#endDate').val()
+  var a = document.createElement('a')
+  var url = `/nstd/general/out_export?a_cd=${a_cd}&a_action_loc=${a_action_loc}&startDate=${startDate}&endDate=${endDate}`
+  a.href = url
+  a.click()
+}
+
+</script>
+{% endblock %}

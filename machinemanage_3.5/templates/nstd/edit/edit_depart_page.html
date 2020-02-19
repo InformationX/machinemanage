@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<style>
+	.mar-t20{margin-top: 20px}
+</style>
+
+<div class="layui-form mar-t20">
+
+	<div class="layui-form-item">
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产番号:</label>
+	      <div class="layui-input-inline">
+	      	<input type="hidden" id="a_material_id">
+	      	<input type="hidden" id="a_action_id">
+	        <input id="a_cd" class="layui-input" autocomplete="off" onkeyup="get_edit_depart()">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">资产名称:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_name" class="layui-input" autocomplete="off" readonly>
+	      </div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline">
+	      <label class="layui-form-label">当前部门:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_origin_depart" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing" style="visibility: hidden;">*</div>
+	    </div>
+	    <div class="layui-inline">
+	      <label class="layui-form-label">最新部门:</label>
+	      <div class="layui-input-inline">
+	        <input id="a_action_depart" class="layui-input" autocomplete="off">
+	      </div>
+	      <div class="xing">*</div>
+	    </div>
+	</div>
+
+	<div class="layui-form-item">
+		<div class="layui-inline" style="margin-left: 110px">
+			<button class="layui-btn mar-l110" onclick="edit_depart()">确定修改</button>
+			<button class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+		</div>
+	</div>
+
+</div>
+
+<script>
+	var $ = ''
+	var layer = ''
+	layui.use(['jquery', 'layer'], function(){
+		$ = layui.jquery;
+
+	});
+
+	function get_edit_depart(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13){
+			let a_cd = $('#a_cd').val()
+			$.ajax({
+				url: '/nstd/edit/get_edit_depart',
+				type: 'get',
+				data: {a_cd:a_cd},
+				dataType: 'JSON',
+				success: function(data){
+					$('#a_name').val(data.a_name)
+					$('#a_origin_depart').val(data.a_origin_depart)
+					$('#a_material_id').val(data.a_material_id)
+					$('#a_action_id').val(data.a_action_id)
+					$('#a_cd').attr('readonly',true)
+				}
+			});
+		}
+	}
+
+	function edit_depart(){
+		let a_cd = $('#a_cd').val()
+		let a_material_id = $('#a_material_id').val()
+		let a_action_id = $('#a_action_id').val()
+		let a_origin_depart = $('#a_origin_depart').val()
+		let a_action_depart = $('#a_action_depart').val()
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		if(a_action_id == ''){
+			layer.alert('未搜索到数据!',{icon:7})
+		}else if(a_action_depart == ''){
+			layer.alert('最新部门不能为空!',{icon:7})
+		}else{
+			let data = {
+				a_cd:a_cd, a_material_id:a_material_id, a_action_id:a_action_id, 
+				a_origin_depart:a_origin_depart, a_action_depart:a_action_depart, 
+				csrfmiddlewaretoken:csrfmiddlewaretoken
+			}
+			$.ajax({
+				url: '/nstd/edit/edit_depart',
+				data: data,
+				type: 'post',
+				dataType: 'JSON',
+				success: function(data){
+					if(data.result){
+						layer.msg('位置修改成功',{icon:1})
+						reset()
+					}
+				}
+			});
+		}
+	}
+
+	function reset(){
+		$('#a_cd').removeAttr('readonly').focus()
+		$('input[name!="csrfmiddlewaretoken"]').val('')
+	}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,181 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-cn">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'plugins/layui/css/layui.css' %}" media="all">
+    <link rel="stylesheet" href="{% static '/plugins/font-awesome/css/font-awesome.min.css' %}" media="all">
+    <style>
+        
+    </style>
+</head>
+
+<body>
+    <div class="layui-fluid main" style="padding:50px">
+        <div class="layui-row layui-col-space15">
+            欢迎使用资产管理系统.
+        </div>
+
+        <!--
+        <div style="margin-top: 100px;width:500px">
+            <fieldset class="layui-elem-field">
+              <legend>NSTD资产管理在线数据导入</legend>
+              <div class="layui-field-box">
+                <a class="layui-btn" href="/nstd/basefunc/download_template?param=add_out">
+                    <i class="layui-icon">&#xe601;</i>模板下载
+                </a>
+                <button type="button" class="layui-btn" id="add_out">
+                    <i class="layui-icon">&#xe67c;</i>在线信息导入
+                </button>
+              </div>
+            </fieldset>
+        </div>
+        <div style="margin-top: 100px;width:500px">
+          <fieldset class="layui-elem-field">
+            <legend>NSTD资产管理在库数据导入</legend>
+            <div class="layui-field-box">
+              <a class="layui-btn" href="/nstd/basefunc/download_template?param=add_instorage">
+                  <i class="layui-icon">&#xe601;</i>模板下载
+              </a>
+              <button type="button" class="layui-btn" id="add_instorage">
+                  <i class="layui-icon">&#xe67c;</i>在库信息导入
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
+        <div style="margin-top: 100px;width:500px">
+          <fieldset class="layui-elem-field">
+            <legend>NSTD资产管理支给数据导入</legend>
+            <div class="layui-field-box">
+              <a class="layui-btn" href="/nstd/basefunc/download_template?param=add_instorage">
+                  <i class="layui-icon">&#xe601;</i>模板下载
+              </a>
+              <button type="button" class="layui-btn" id="add_zj">
+                <i class="layui-icon">&#xe67c;</i>支给信息导入
+              </button>
+            </div>
+          </fieldset>
+        </div>
+        -->
+    </div>
+</body>
+<script src="{% static 'plugins/layui/layui.js' %}"></script>
+<script>
+    var layer = ''
+    var upload = ''
+    var $ = ''
+    layui.use(['jquery','layer','upload'], function() {
+        var $ = layui.jquery;
+        layer = layui.layer;
+        upload = layui.upload;
+
+        $('#test').on('click', function() {
+            parent.message.show({
+                skin: 'cyan'
+            });
+        });
+
+        //数据上传
+        upload.render({
+          elem: '#add_out',
+          url: '/nstd/basefunc/upload_file',
+          data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          accept: 'file',
+          before: function(obj){
+            layer.load();
+          },
+          done: function(res){
+            layer.closeAll('loading');
+            let result = res.result
+            if(result){ //文件上传成功
+              let tmp_file = res.tmp_file;  
+              //弹出即全屏
+              var index = layer.open({
+                type: 2,
+                title: '在线设备导入',
+                content: '/nstd/basefunc/upload_table_page?flag=add_out&tmp_file=' + tmp_file,
+                area: ['320px', '195px'],
+                maxmin: true
+              });
+              layer.full(index);
+            }
+          },
+          error:function(){
+            layer.closeAll('loading');
+          }
+        });
+
+        //数据上传
+        upload.render({
+          elem: '#add_instorage',
+          url: '/nstd/basefunc/upload_file',
+          data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          accept: 'file',
+          before: function(obj){
+            layer.load();
+          },
+          done: function(res){
+            layer.closeAll('loading');
+            let result = res.result
+            if(result){ //文件上传成功
+              let tmp_file = res.tmp_file;  
+              //弹出即全屏
+              var index = layer.open({
+                type: 2,
+                title: '在库设备导入',
+                content: '/nstd/basefunc/upload_table_page?flag=add_instorage&tmp_file=' + tmp_file,
+                area: ['320px', '195px'],
+                maxmin: true
+              });
+              layer.full(index);
+            }
+          },
+          error:function(){
+            layer.closeAll('loading');
+          }
+        });
+
+        //数据上传
+        upload.render({
+          elem: '#add_zj',
+          url: '/nstd/basefunc/upload_file',
+          data: {
+            'csrfmiddlewaretoken': '{{ csrf_token }}'
+          },
+          accept: 'file',
+          before: function(obj){
+            layer.load();
+          },
+          done: function(res){
+            layer.closeAll('loading');
+            let result = res.result
+            if(result){ //文件上传成功
+              let tmp_file = res.tmp_file;  
+              //弹出即全屏
+              var index = layer.open({
+                type: 2,
+                title: '支给设备导入',
+                content: '/nstd/basefunc/upload_table_page?flag=add_zj&tmp_file=' + tmp_file,
+                area: ['320px', '195px'],
+                maxmin: true
+              });
+              layer.full(index);
+            }
+          },
+          error:function(){
+            layer.closeAll('loading');
+          }
+        });
+
+    });
+</script>
+</html>

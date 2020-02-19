@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- 资产批量退库 -->
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产退库</legend>
+</fieldset>
+
+<div style="padding:0 10px">
+  <div class="layui-tab layui-tab-brief" lay-filter="docDemoTabBrief">
+    <ul class="layui-tab-title">
+      <li>资产退库</li>
+      <li class="layui-this">批量退库</li>
+    </ul>
+    <div class="layui-tab-content">
+      <div class="layui-tab-item">
+        {% include "apple/basefunc/asset_back.html" %}
+      </div>
+
+      <!-- 资产批量出库 -->
+      <div class="layui-tab-item layui-show">
+        <div class="layui-form mart10">
+          <div class="layui-form-item">
+            <a class="layui-btn" href="/b/download_template?param=out_back">
+                <i class="layui-icon">&#xe601;</i>模板下载
+            </a>
+            <div class="layui-inline" style="margin-bottom: 0">
+              <button class="layui-btn" id="upload_out_back">
+                数据上传
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var $ = ''
+  var layer = ''
+  var upload = ''
+  layui.use(['jquery', 'upload'], function(){
+    $ = layui.jquery
+    layer = layui.layer
+    upload = layui.upload
+
+    //数据上传
+      uploadInst = upload.render({
+        elem: '#upload_out_back',
+        url: '/b/uploadfile',
+        data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+        accept: 'file',
+        before: function(obj){
+          layer.load();
+        },
+        done: function(res){
+          layer.closeAll('loading');
+          let result = res.result
+          if(result){ //文件上传成功
+            let tmp_file = res.tmp_file;  
+            //弹出即全屏
+            var index = layer.open({
+              type: 2,
+              title: '资产设备批量支给',
+              content: '/b/upload_table_page?opr_type=out_back&tmp_file=' + tmp_file,
+              area: ['320px', '195px'],
+              maxmin: true
+            });
+            layer.full(index);
+          }
+        },
+        error:function(){
+          layer.closeAll('loading');
+        }
+      });
+  });
+</script>
+
+{% endblock %}

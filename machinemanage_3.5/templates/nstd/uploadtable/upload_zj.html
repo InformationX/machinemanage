@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 设备支给信息Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_zj()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var tmp_file = '{{ tmp_file }}'
+	var tableIns = ''
+	var hasUploaded = false
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		tableIns = table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/nstd/basefunc/get_zj_csv_data' //数据接口
+	      ,cols: [[ //表头
+	        {type: 'numbers', title: '序号', width:60}
+	        ,{field: 'a_cd', title: '资产番号', width:100, edit: true}
+	        ,{field: 'a_type_cd', title: '资产型号', width:150}
+	        ,{field: 'a_name', title: '资产名称', width:190}
+	        ,{field: 'a_action_depart', title: '当前部门',width:150, edit: true}
+	        ,{field: 'a_action_charge', title: '供应商确认',width:160, edit: true}
+	        ,{field: 'a_action_remark', title: '备注信息',width:200, edit: true}
+	        ,{field: 'a_action_state', title: '资产状态', width:100, edit: true}
+	        ,{field: 'a_action_loc', title: '当前位置', width:100}
+	        ,{field: 'a_action_category', title: '折旧类别', width:100}
+	        ,{field: 'a_material_id', title: '资产ID编号', width:100, hide: true}
+	        ,{field: 'a_action_type', title: '库存状态',width:100}
+	        ,{title: '操作', width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {tmp_file:tmp_file}
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	});
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let tmp_list = []
+			tmp_list[0] = $(this).find('td[data-field="a_cd"]').text()				  //资产番号
+			tmp_list[1] = $(this).find('td[data-field="a_action_depart"]').text()	  //当前部门
+			tmp_list[2] = $(this).find('td[data-field="a_action_charge"]').text()	  //供应商确认
+			tmp_list[3] = $(this).find('td[data-field="a_action_remark"]').text()     //备注信息
+			tmp_list[4] = $(this).find('td[data-field="a_action_loc"]').text()	  	  //资产位置
+			tmp_list[5] = $(this).find('td[data-field="a_action_state"]').text()	  //资产状态
+			tmp_list[6] = $(this).find('td[data-field="a_action_category"]').text()	  //折旧类别
+			tmp_list[7] = $(this).find('td[data-field="a_material_id"]').text()		  //资产ID编号
+			a_action_type = $(this).find('td[data-field="a_action_type"]').text().trim()
+			if(tmp_list[0] == ''){
+				layer.alert('第' + (index + 1) + '行资产番号输入不能为空!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}else if(tmp_list[1] == ''){
+				layer.alert('第' + (index + 1) + '行当前部门不能为空！',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}else if(a_action_type != '在库' && a_action_type != '资产转换'){
+				layer.alert('第' + (index + 1) + '行不属于在库状态，无法支给!',{title:'温馨提示',icon:7})
+				flag = false
+				return false
+			}
+			table_data.push(tmp_list)
+		});
+		if(!flag){
+			return []
+		}else{
+			return table_data
+		}
+	}
+
+	//点击上传按钮开始支给
+	function upload_zj(){
+		if(hasUploaded){
+			layer.alert('您已经成功上传一次，不能重复上传！',{title:'温馨提示',icon:7})
+			return
+		}
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		if(table_data.length > 0){
+			if(table_data.length > 500){
+				layer.alert('上传数量单次不能超过500条！',{title:'温馨提示',icon:7})
+				return
+			}else{
+				data = {
+					table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken
+				}
+				$.ajax({
+					url: '/nstd/basefunc/upload_zj',
+					type: 'post',
+					dataType: 'json',
+					data: data,
+					success: function(data){
+						if(data.result){
+							//layer.msg('批量上传成功,上传数量:' + data.num, {icon:1})
+							alert(`批量上传成功,上传数量:${data.num}`)
+							hasUploaded = true
+						}else{
+							layer.msg(data.msg,{title:'温馨提示',icon:2,time:5000})
+						}
+					},
+					error: function(xmlHq,status,errorThrows){
+						console.log(errorThrows)
+					}
+				});
+			}
+		}
+	}
+
+</script>
+
+{% endblock %}

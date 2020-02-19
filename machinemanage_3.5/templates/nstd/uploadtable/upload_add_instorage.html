@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 在库设备导入Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_add_out()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var tmp_file = '{{ tmp_file }}'
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/nstd/basefunc/get_add_instorage_csv_data' //数据接口
+	      ,cols: [[ //表头
+	      	{type:'numbers', title: '序号', width:60, edit: false}
+	        ,{field: 'a_cd', title: '资产番号', width:100, edit: true}
+	        ,{field: 'a_self_cd', title: '资产编号', width:100, edit: true}
+	        ,{field: 'a_name', title: '资产名称',width:220, edit: true}
+	        ,{field: 'a_type_cd', title: '资产型号',width:130, edit: true}
+	        ,{field: 'a_fuselage_cd', title: '机身号',width:120, edit: true}
+	        ,{field: 'a_amount', title: '单位(台,个)',width:100, edit: true}
+	        ,{field: 'a_price', title: '单价',width:90, edit: true, hide: false}
+	        ,{field: 'a_currency', title: '币种',width:70, edit: true}
+	        ,{field: 'a_out_time', title: '出厂日期',width:120, edit: true}
+	        ,{field: 'a_purchase_time', title: '购入日期',width:120, edit: true}
+	        ,{field: 'a_depart', title: '部门',width:100, edit: true}
+	        ,{field: 'a_loc_cd', title: '位置',width:100, edit: true}
+	        ,{field: 'a_brand', title: '品牌',width:100, edit: true}
+	        ,{field: 'a_supplier', title: '供应商',width:200, edit: true}
+			,{field: 'a_po_cd', title: 'PO号',width:100, edit: true}
+			,{field: 'a_status', title: '状态',width:80, edit: true}
+			,{field: 'a_category', title: '类别',width:100, edit: true}
+			,{field: 'a_model', title: '购入机种',width:100, edit: true}
+			,{field: 'a_project_cd', title: '工程代码',width:100, edit: true}
+			,{field: 'a_funds_type', title: '经费类别',width:120, edit: true}
+			,{field: 'a_b_nstd', title: '资产分类',width:80, edit: true}
+	        ,{title:'操作',width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {
+	        tmp_file:tmp_file
+	      }
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	})
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		$('#uploadwrap tbody tr').each(function(){
+			let tmp_list = []
+			tmp_list[0] =  $(this).find('td[data-field="a_cd"]').text()
+			tmp_list[1] = $(this).find('td[data-field="a_self_cd"]').text()
+			tmp_list[2] = $(this).find('td[data-field="a_name"]').text()
+			tmp_list[3] = $(this).find('td[data-field="a_type_cd"]').text()
+			tmp_list[4] = $(this).find('td[data-field="a_fuselage_cd"]').text()
+			tmp_list[5] = $(this).find('td[data-field="a_amount"]').text()
+			tmp_list[6] = $(this).find('td[data-field="a_price"]').text()
+			tmp_list[7] = $(this).find('td[data-field="a_currency"]').text()
+			tmp_list[8] = $(this).find('td[data-field="a_out_time"]').text()
+			tmp_list[9] = $(this).find('td[data-field="a_purchase_time"]').text()
+			tmp_list[10] = $(this).find('td[data-field="a_depart"]').text()
+			tmp_list[11] = $(this).find('td[data-field="a_loc_cd"]').text()
+			tmp_list[12] = $(this).find('td[data-field="a_brand"]').text()
+			tmp_list[13] = $(this).find('td[data-field="a_supplier"]').text()
+			tmp_list[14] = $(this).find('td[data-field="a_po_cd"]').text()
+			tmp_list[15] = $(this).find('td[data-field="a_status"]').text()
+			tmp_list[16] = $(this).find('td[data-field="a_category"]').text()
+			tmp_list[17] = $(this).find('td[data-field="a_model"]').text()
+			tmp_list[18] = $(this).find('td[data-field="a_project_cd"]').text()
+			tmp_list[19] = $(this).find('td[data-field="a_funds_type"]').text()
+			tmp_list[20] = $(this).find('td[data-field="a_b_nstd"]').text()
+			table_data.push(tmp_list)
+		});
+		return table_data
+	}
+
+	//点击上传按钮开始上传
+	function upload_add_out(){
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		
+		$.ajax({
+			url: '/nstd/basefunc/upload_add_instorage',
+			type: 'post',
+			dataType: 'json',
+			data: {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken},
+			success: function(data){
+				layer.alert('123321')
+				layer.msg('123321')
+				if(data.result){
+					alert('批量上传成功,上传数量:' + data.num, {icon:1})
+				}else{
+					alert('操作失败!',{title:'温馨提示',icon:2,time:5000})
+				}
+			},
+			error: function(xmlHq,status,errorThrows){
+				console.log(errorThrows)
+			}
+		})
+		
+	}
+
+</script>
+
+{% endblock %}

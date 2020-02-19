@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>手持机种修改</legend>
+</fieldset>
+
+<div class="layui-form mart10 pad0_10" style="min-width:1040px">
+  <div class="layui-form-item">
+  	<div class="layui-inline">
+	  	<label class="layui-form-label">使用机种:</label>
+	    <div class="layui-input-inline">
+	      <input id="a_action_model" autocomplete="off" class="layui-input" placeholder="请输入机种">
+	    </div>
+	</div>
+	<div class="layui-inline">
+		<button class="layui-btn" onclick="addActionModel()">
+			<i class="layui-icon">&#xe608;</i>点击添加
+		</button>
+	</div>
+  </div>
+
+  <table id="position" lay-filter="test"></table>
+
+  <script type="text/html" id="barDemo">
+  	<a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">
+  	    <i class="layui-icon">&#xe640;</i>删除
+  	</a>
+  </script>
+
+  <!-- 弹窗信息 -->
+  <div id="editcon" class="hid">
+    
+  </div>
+
+</div>
+
+<script>
+  var layer = ''
+  var $ = ''
+  var table = ''
+  var tableIns = ''
+  layui.use(['layedit', 'jquery', 'table'], function(){
+    $ = layui.jquery
+	  layer = layui.layer
+	  table = layui.table
+
+	  tableIns = table.render({
+      elem: '#position'
+      ,url: '/nstd/baseinfo/get_mobile_model' //数据接口
+      ,page: false //开启分页
+      ,loading: false
+      ,cols: [[ //表头
+        {type: 'numbers', title: '序号', width: 100}
+        ,{field: 'm_model', title: '使用机种', width:120}
+        ,{field: 'opr_user', title: '操作员', width:120}
+        ,{field: 'add_time', title: '添加时间', width:120}
+        ,{field: '操作', align:'center', toolbar: '#barDemo', width:150}
+        ,{field: 'm_id', width:120, hide:true}
+      ]]
+	});
+
+    $(function(){
+      $('.layui-layer-content').css('height','auto')
+    })
+
+  	table.on('tool(test)', function(obj){ //注：tool是工具条事件名，test是table原始容器的属性 lay-filter="对应的值"
+  	  var data = obj.data; //获得当前行数据
+  	  var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+  	  var tr = obj.tr; //获得当前行 tr 的DOM对象
+  	 
+  	  if(layEvent === 'del'){ //删除
+    	layer.confirm('确定要删除吗？', {title:'温馨提示',icon:3,shadeClose:true},function(index){
+          	  let m_id = data.m_id
+	          $.ajax({
+	            url: '/nstd/baseinfo/action_model_del',
+	            data: {m_id:m_id},
+	            type: 'get',
+	            dataType: 'json',
+	            success: function(data){
+	              if(data.result){
+	                layer.msg('删除成功',{icon:1})
+	                obj.del(); //删除对应行（tr）的DOM结构，并更新缓存
+	                layer.close(index);
+	              }else{
+	                layer.alert(data.msg,{title:'温馨提示',icon:2})
+	              }
+	            },
+	            error: function(xmlHq,status,errorThrows){
+	              console.log(errorThrows)
+	            }
+	          })
+    	  },function(index){
+            layer.msg('操作已取消')
+        });
+  	  }
+  	});
+  });
+
+  function reset(){
+  	$('input').val('')
+  }
+
+  function addActionModel(){
+  	let id_list = ['a_action_model']
+  	let vde = vde_is_null(id_list)
+  	if(vde){
+      	let a_action_model = $('#a_action_model').val()
+  		$.ajax({
+  			url: '/nstd/baseinfo/add_action_model',
+  			data: {a_action_model:a_action_model},
+  			type: 'get',
+  			dataType: 'json',
+  			success: function(data){
+  				if(data.result){
+  					layer.msg('添加成功',{icon:1})
+            		tableIns.reload({
+              			page:{curr:1}
+            		});
+            		reset()
+	  			}else{
+	            	layer.alert(data.msg,{icon:2})
+	          	}
+  			},
+  			error: function(xmlHq,status,errorThrows){
+  				console.log(errorThrows)
+  			}
+  		})
+  	}
+  }
+</script>
+{% endblock %}

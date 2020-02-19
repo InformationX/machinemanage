@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>添加计量信息</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1025px">
+  <!--
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input type="hidden" id="a_material_id"/>
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="calculate_detail()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" autocomplete="off" class="layui-input" placeholder="请输入编号">
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产名称:</label>
+      <div class="layui-input-inline">
+        <input id="a_name" autocomplete="off" class="layui-input" placeholder="请输入资产名称">
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">送检日期:</label>
+      <div class="layui-input-inline">
+        <input id="cal_censorship" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">是否计量:</label>
+      <div class="layui-input-inline">
+        <input id="a_need_cal" autocomplete="off" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label"></label>
+      <div class="layui-input-inline" style="width:1000px;color:#ccc">
+        ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">校正:</label>
+      <div class="layui-input-inline">
+        <input id="cal_adjust" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">计量方式:</label>
+      <div class="layui-input-inline">
+        <input id="cal_method" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">计量日期:</label>
+      <div class="layui-input-inline">
+        <input id="cal_date" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label"></label>
+      <button class="layui-btn" style="width:190px" onclick="calculate_add()">计量数据上传</button>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label"></label>
+      <div class="layui-input-inline" style="width:1000px;color:#ccc">
+        ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+      </div>
+    </div>
+  </div>
+  -->
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <!--
+      <div class="layui-inline">
+        <button type="reset" class="layui-btn layui-btn-primary" onclick="reset()">重置输入</button>
+      </div>
+      -->
+      <div class="layui-inline">
+        <a class="layui-btn" href="/nstd/basefunc/download_template?param=calculate_add">
+          <i class="layui-icon">&#xe601;</i>模板下载
+        </a>
+        <button type="reset" class="layui-btn" id="upload_calculate_add">
+          <i class="layui-icon">&#xe67c;</i>数据上传
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var $ = ''
+  var laydate = ''
+  var upload = ''
+  layui.use(['layer', 'jquery', 'laydate', 'upload'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+    laydate = layui.laydate
+    upload = layui.upload
+
+    laydate.render({
+      elem: '#cal_censorship',
+      value: new Date()
+    })
+    laydate.render({
+      elem: '#cal_date'
+    })
+    laydate.render({
+      elem: '#cal_end_date'
+    })
+    laydate.render({
+      elem: '#cal_revert_date'
+    })
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_calculate_add',
+      url: '/nstd/basefunc/upload_file',
+      data: {'csrfmiddlewaretoken': '{{ csrf_token }}'},
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量入库',
+            content: '/nstd/basefunc/upload_table_page?flag=calculate_add&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+  });
+
+  //计量前搜素详情
+  function calculate_detail(){
+    let keyCode = window.event.keyCode
+    if(keyCode == 13){
+      let a_cd = $('#a_cd').val()
+      if(a_cd == ''){
+        layer.alert('资产番号不能为空！',{title:'温馨提示',icon:7})
+      }else{
+        $.ajax({
+          url: '/nstd/basefunc/get_calculate_detail',
+          type: 'get',
+          dataType: 'json',
+          data: {a_cd:a_cd},
+          success:function(data){
+            if(data.result){
+              $('#a_material_id').val(data.a_material_id)
+              $('#a_type_cd').val(data.a_type_cd)
+              $('#a_name').val(data.a_name)
+              $('#a_need_cal').val(data.a_need_cal)
+              if(data.a_action_type == '需要送检'){
+                $('#cal_censorship').val(data.cal_censorship)
+                $('#cal_adjust').val(data.cal_adjust)
+                $('#cal_method').val(data.cal_method)
+                $('#cal_date').val(data.cal_date)
+                $('#cal_end_date').val(data.cal_end_date)
+                $('#cal_revert_date').val(data.cal_revert_date)
+              }
+            }else{
+              layer.alert(data.msg,{title:'温馨提示',icon:7})
+              $('input[name!="csrfmiddlewaretoken"]').val('')
+            }
+          }
+        })
+      }
+    }
+  }
+
+  //资产送检
+  function sendToCalculate(){
+    let a_action_type = $('#a_action_type').val()
+    let a_material_id = $('#a_material_id').val()
+    if(a_action_type == '已送检'){
+      layer.alert('该资产已送检',{title:'温馨提示',icon:7})
+    }else if(a_material_id == ''){
+      layer.alert('请先输入资产番号搜索数据',{title:'温馨提示',icon:7})
+    }else{
+      let a_cd = $('#a_cd').val()
+      let cal_censorship = $('#cal_censorship').val()
+      if(cal_censorship == ''){
+        layer.alert('送检日期不能为空!',{icon:7,title:'温馨提示'})
+        return
+      }
+      $.ajax({
+        url: '/nstd/basefunc/send_to_cal',
+        data: {a_cd:a_cd,a_material_id:a_material_id,cal_censorship:cal_censorship},
+        dataType: 'json',
+        type: 'get',
+        success:function(data){
+          if(data.result){
+            layer.msg('送检成功',{icon:1})
+            $('#a_action_type').val('已送检')
+            $('#a_cd').attr('readonly')
+          }
+        }
+      })
+    }
+  }
+
+  //计量数据上传
+  function calculate_add(){
+    let a_cd = $('#a_cd').val()
+    let a_material_id = $('#a_material_id').val()
+    let a_action_type = $('#a_action_type').val()
+    if(a_cd == ''){
+      layer.alert('资产番号不能为空！',{title:'温馨提示',icon:7})
+      return
+    }else if(a_material_id == ''){
+      layer.alert('请先搜索数据',{title:'温馨提示',icon:7})
+      return
+    }else if(a_action_type != '已送检'){
+      layer.alert('该资产未送检',{title:'温馨提示',icon:7})
+      return
+    }
+    let vde = vde_is_null(['a_cd','cal_adjust','cal_method','cal_date','cal_end_date','cal_revert_date'])
+    if(vde){
+      let cal_adjust = $('#cal_adjust').val()
+      let cal_method = $('#cal_method').val()
+      let cal_date = $('#cal_date').val()
+      let cal_end_date = $('#cal_end_date').val()
+      let cal_revert_date = $('#cal_revert_date').val()
+      let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+      let data = {
+        a_cd:a_cd,cal_adjust:cal_adjust,cal_method:cal_method,cal_date:cal_date,
+        cal_end_date:cal_end_date,cal_revert_date:cal_revert_date,csrfmiddlewaretoken:csrfmiddlewaretoken
+      }
+      $.ajax({
+        url: '/nstd/basefunc/calculate_add',
+        type: 'post',
+        data: data,
+        dataType: 'json',
+        success:function(data){
+          if(data.result){
+            layer.msg('操作成功',{icon:1})
+            reset()
+          }else{
+            layer.alert('操作失败',{title:'温馨提示',icon:2})
+          }
+        }
+      })
+    }
+  }
+
+  //重置输入
+  function reset(){
+  	$('input[name != "csrfmiddlewaretoken"]').val('')
+    $('#a_cd').removeAttr('readonly')
+  }
+</script>
+{% endblock %}

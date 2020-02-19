@@ -1,0 +1,127 @@
+.h35{height: 35px}
+.lh35{line-height: 35px}
+.h45{height: 45px}
+.lh45{line-height: 45px}
+.cred {color:red}
+.cfff {color:#fff}
+.bgred{background: red !important;color:#fff}
+.w100{width:100px !important}
+.w190{width:190px}
+.mart-8{margin-top:-8px}
+
+.marl10{margin-left: 10px}
+.marl100{margin-left: 100px}
+.marl110{margin-left: 110px}
+.mart10{margin-top: 10px}
+.mart20{margin-top: 20px}
+
+.atitle{margin:20px 10px}
+
+.pad10{padding:10px}
+.pad20{padding:20px}
+.pad0_10{padding:0 10px}
+.pad-t10{padding-top:10px}
+.pad-l10{padding-left:10px}
+
+.fl{float:left}
+.fr{float:right}
+.fw_b{font-weight: bold}
+.c555{color:#555}
+.h36_w190{height:36px;width:190px}
+
+.fs16{font-size: 16px}
+.fs18{font-size: 18px}
+
+.h36{height:36px}
+.w120{width:120px !important}
+
+.xing{
+	color:#c00;
+	float: left;
+	display: block;
+	line-height: 25px;
+	margin-right: 10px;
+	padding: 9px 0px !important;
+}
+.num{
+  	width:72px;
+  	float:left;
+  	border-left:0;
+  	border-right:0;
+  	text-align: center;
+  	padding-left:0
+}
+
+.v-hid{visibility: hidden}
+.hid{display:none}
+
+/* 自定义下拉框样式 */
+.icon{
+	width: 0;
+	height: 0;
+	right: 10px;
+	top: 50%;
+	cursor: pointer;
+	position: absolute;
+	display: inline-block;
+	border-style: dashed;
+	border-width: 6px;
+	overflow: hidden;
+	border-color: transparent;
+	-webkit-transition: all .3s;
+	border-top-style: solid;
+	border-top-color: #c2c2c2;
+}
+.icon1{
+	margin-top: -3px;
+}
+.icon2{
+	margin-top: -9px;
+	transform: rotate(180deg);
+	vertical-align: middle;
+}
+.dl{
+	top:42px;
+	z-index:1;
+	border:1px solid #d2d2d2;
+	background-color:#fff;
+	width:190px;
+	box-sizing: border-box;
+	border-radius: 2px;
+	font-size: 14px;
+	overflow-y:auto;
+	max-height: 300px;
+	padding:5px 0;
+	position: absolute;
+	cursor:pointer;
+	box-shadow: 0 2px 4px rgba(0,0,0,.12);
+}
+.dd{
+	padding:0 10px;
+	line-height: 36px;
+	overflow: hidden;
+	text-overflow:ellipsis;
+	white-space: nowrap;
+}
+.c999{color:#999}
+.my-define{
+	position:relative
+}
+.bgf2f{background-color: #F2F2F2}
+.pad_r30{padding-right: 30px}
+.check-this{
+	background-color: #5FB878;
+	color:#fff;
+}
+
+/*****资产变更*****/
+.type{
+  	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  	text-align: center;width:150px;height:88px;
+  }
+.type:hover{background-color: #009688;color:#fff;border:1px solid #fff;}
+.title{height:35px;line-height:35px;border-bottom: 1px solid #eee}
+.content{height:53px;line-height:53px}
+.mart30{margin-top:30px}
+.marl30{margin-left:30px}
+.m_h45{min-height: 45px}

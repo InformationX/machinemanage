@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<body>
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产退库</legend>
+</fieldset>
+
+<div class="layui-form mart10">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" onkeyup="asset_out_detail()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号:</label>
+      <div class="layui-input-inline">
+        <input id="a_fuselage_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">主体资产号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_cd" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体序列号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_serial" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">当前线别:</label>
+      <div class="layui-input-inline">
+        <input id="a_take_line" autocomplete="off" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">当前位置:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_loc" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">行为状态:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_type" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">货架号:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_shelf" placeholder="请输入主体资产号" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">状态:</label>
+      <div class="h36 w190 fl">
+        <select id="a_action_state">
+          <option value=""></option>
+          <option>OK</option>
+          <option>NG</option>
+          <option>IDLE</option>
+        </select>
+      </div>
+      <div class="xing" style="margin-left:10px">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">退库人员:</label>
+      <div class="layui-input-inline">
+        <input id="a_back_user" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">主管确认:</label>
+      <div class="layui-input-inline">
+        <input id="a_confirm_user" class="layui-input">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">备注信息:</label>
+    <div class="layui-input-block" style="width:530px">
+      <textarea id="a_action_remark" placeholder="请输入备注内容" class="layui-textarea"></textarea>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-input-block">
+      <button class="layui-btn" onclick="asset_out_single()">立即提交</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+    </div>
+  </div>
+</div>
+<script>
+  var $ = ''
+  var form = ''
+	layui.use(['form', 'layedit', 'jquery'], function(){
+	  form = layui.form
+	  layer = layui.layer
+	  layedit = layui.layedit
+	  $ = layui.jquery
+
+	});
+
+  //获取出库资产详情
+  function asset_out_detail(){
+    let keyCode = window.event.keyCode
+    if(keyCode == 13){
+      let a_cd = $('#a_cd').val()
+      if(a_cd != ''){
+        $.ajax({
+          url: '/b/basefunc/asset_out_detail',
+          type: 'get',
+          dataType: 'JSON',
+          data: {a_cd:a_cd},
+          success: function(data){
+            if(data.result){
+              $('#a_type_cd').val(data.a_type_cd)
+              $('#a_fuselage_cd').val(data.a_fuselage_cd)
+              $('#a_main_cd').val(data.a_main_cd)
+              $('#a_main_serial').val(data.a_main_serial)
+              $('#a_take_line').val(data.a_take_line)
+              $('#a_action_loc').val(data.a_action_loc)
+              $('#a_action_state').val(data.a_action_state)
+              $('#a_action_type').val(data.a_action_type)
+              form.render('select')
+            }else{
+              reset()
+              layer.msg(data.msg)
+              $('#a_cd').val(data.a_cd)
+              $('#a_type_cd').val(data.a_type_cd)
+              $('#a_fuselage_cd').val(data.a_fuselage_cd)
+              $('#a_action_type').val(data.a_action_type)
+            }
+          }
+        });
+      }
+    }
+  }
+
+  //资产单个退库
+  function asset_out_single(){
+    let a_action_type = $('#a_action_type').val()
+    let a_main_cd = $('#a_main_cd').val()
+    let a_main_serial = $('#a_main_serial').val()
+
+    let a_cd = $('#a_cd').val()
+    let a_action_shelf = $('#a_action_shelf').val()
+    let a_action_state = $('#a_action_state').val()
+    let a_back_user = $('#a_back_user').val()
+    let a_confirm_user = $('#a_confirm_user').val()
+    let a_action_remark = $('#a_action_remark').val()
+    if(a_action_type != '已出库'){
+      layer.msg('该资产未出库!',{icon:2})
+    }else if(a_cd == ''){
+      layer.msg('资产番号不能为空!',{icon:7})
+    }else if(a_action_shelf == ''){
+      layer.msg('货架号不能为空!',{icon:7})
+    }else if(a_action_state == ''){
+      layer.msg('资产状态不能为空!',{icon:5})
+    }else if(a_back_user == ''){
+      layer.msg('退库人员不能为空!',{icon:5})
+    }else if(a_confirm_user == ''){
+      layer.msg('主管确认不能为空!',{icon:5})
+    }else{
+      let csrf = $('input[name="csrfmiddlewaretoken"]').val()
+      data = {
+        a_cd:a_cd,a_action_shelf:a_action_shelf,a_action_state:a_action_state,
+        a_back_user:a_back_user,a_confirm_user:a_confirm_user,a_main_cd:a_main_cd,
+        a_main_serial:a_main_serial,a_action_remark:a_action_remark,csrfmiddlewaretoken:csrf
+      }
+      $.ajax({
+        url: '/b/basefunc/asset_out_single',
+        data: data,
+        type: 'post',
+        dataType: 'JSON',
+        success: function(data){
+          if(data.result){
+            layer.msg('操作成功',{icon:1})
+            reset()
+          }else{
+            layer.msg('操作成功',{icon:1})
+          }
+        }
+      });
+    }
+  }
+
+  function reset() {
+    $('input').val('')
+    $('textarea').val('')
+  }
+
+</script>
+{% endblock %}
+</body>
+</html>

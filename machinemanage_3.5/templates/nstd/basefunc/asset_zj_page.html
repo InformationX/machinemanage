@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<style>
+  .mart-8{margin-top:-8px}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>设备支给</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1200px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号" onkeyup="before_zj_detail()">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">被支给方:</label>
+      <div class="fl h36_w190 my-define">
+        <input class="layui-input pad_r30" placeholder="请选择供应商" id="a_action_supplier" 
+          autocomplete="off" onkeyup="searchDown(this)" 
+          onfocus="showSlide(this)" onblur="hideSlide(this)"/>
+        <i class="icon icon1"></i>
+        <dl class="dl hid">
+          <!--<dd lay-value="1" class="dd check-this">nidec科技</dd>-->
+        </dl>
+      </div>
+      <div class="xing marl10">*</div>
+    </div>
+  	<div class="layui-inline" style="margin-left: 110px">
+  	  <div class="layui-input-inline w100">
+        <input type="hidden" id="a_action_id"/>
+        <input type="hidden" id="a_material_id"/>
+  	  	<button class="layui-btn mart-8" onclick="before_zj_vde()">确认支给</button>
+  	  </div>
+  	</div>
+  	<div class="layui-inline">
+  	  <button class="layui-btn layui-btn-primary mart-8" onclick="reset()">点击重置</button>
+  	</div>
+  </div>
+
+  <div style="padding:0 10px">
+  	<hr/>
+  </div>
+
+  <div class="layui-form-item">
+  	<div class="layui-inline">
+      <label class="layui-form-label">编号:</label>
+      <div class="layui-input-inline">
+        <input id="a_self_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">名称:</label>
+      <div class="layui-input-inline">
+        <input id="a_name" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">机身号码:</label>
+      <div class="layui-input-inline">
+        <input id="a_fuselage_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">存放位置:</label>
+      <div class="layui-input-inline">
+        <input id="a_loc_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">状态:</label>
+      <div class="layui-input-inline">
+        <input id="a_status" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">单价:</label>
+      <div class="layui-input-inline">
+        <input id="a_price" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">单位 (台,个):</label>
+      <div class="layui-input-inline">
+        <input id="a_amount" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">单价币种:</label>
+      <div class="layui-input-inline">
+        <input id="a_currency" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">品牌:</label>
+      <div class="layui-input-inline">
+        <input id="a_brand" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产分类:</label>
+      <div class="layui-input-inline">
+        <input id="a_category" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">工位代码:</label>
+      <div class="layui-input-inline">
+        <input id="a_project_cd" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">出厂时间:</label>
+      <div class="layui-input-inline">
+        <input id="a_out_time" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+  	<div class="layui-inline">
+      <label class="layui-form-label">购入时间:</label>
+      <div class="layui-input-inline">
+        <input id="a_purchase_time" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">机种:</label>
+      <div class="layui-input-inline">
+        <input id="a_model" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">预算号:</label>
+      <div class="layui-input-inline">
+        <input id="a_budget" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">请示书号:</label>
+      <div class="layui-input-inline">
+        <input id="a_referendum" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">PO号:</label>
+      <div class="layui-input-inline">
+        <input id="a_po_cd" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">SAP番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_sap_cd" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">所属部门:</label>
+      <div class="layui-input-inline">
+        <input id="a_depart" class="layui-input" readonly>
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">行为状态:</label>
+      <div class="layui-input-inline">
+        <input id="a_action_type" class="layui-input" readonly>
+      </div>
+    </div>
+  </div>
+
+  <div class="layui-inline">
+    <div style="margin-left: 110px">
+      <a class="layui-btn" href="/nstd/basefunc/download_template?param=zj">
+        <i class="layui-icon">&#xe601;</i>模板下载
+      </a>
+      <button class="layui-btn layui-btn-primary layui-bg-cyan" id="upload_zj">
+        <i class="layui-icon">&#xe67c;</i>批量支给
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var upload = ''
+  var $ = ''
+  layui.use(['layedit', 'jquery', 'upload'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+    upload = layui.upload
+  	layedit = layui.layedit
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_zj',
+      url: '/nstd/basefunc/upload_file',
+      data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量退库',
+            content: '/nstd/basefunc/upload_table_page?flag=zj&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+    $(function(){
+      reloadSlide($('#a_action_supplier'))
+    })
+  });
+
+  //支给之前验证资产状态
+  function before_zj_vde(){
+    let a_action_type = $('#a_action_type').val()
+    let a_material_id = $('#a_material_id').val()
+    if(a_material_id == ''){
+      layer.alert('请先搜索数据!',{title:'温馨提示',icon:7})
+    }else if(a_action_type != '在库'){
+      layer.alert('该资产' + a_action_type)
+    }else{
+      $.ajax({
+        url: '/nstd/basefunc/before_action_vde',
+        type: 'get',
+        dataType: 'json',
+        data: {a_material_id:a_material_id},
+        success: function(data){
+          if(data.result){
+            action_zj()
+          }else{
+            layer.alert(data.msg,{title:'温馨提示',icon:7})
+          }
+        }
+      });
+    }
+  }
+
+  //确认支给
+  function action_zj(){
+    let a_cd = $('#a_cd').val()
+  	let a_action_supplier = $('#a_action_supplier').val()
+  	let a_material_id = $('#a_material_id').val()
+    let a_action_loc = $('#a_loc_cd').val()
+    let a_action_state = $('#a_status').val()
+    let zj_data = {
+      a_action_supplier:a_action_supplier,a_material_id:a_material_id,
+      a_action_loc:a_action_loc,a_action_state:a_action_state,a_cd:a_cd
+    }
+  	let vde = vde_is_null(['a_action_supplier'])
+  	if(vde){
+  		if(a_fuselage_cd == ''){
+  			layer.alert('该资产番号未搜到,无法支给!',{icon:5})
+  		}else{
+        $.ajax({
+          url: '/nstd/basefunc/action_zj',
+          type: 'get',
+          data: zj_data,
+          dataType: 'json',
+          success: function(data){
+            if(data.result){
+              layer.msg('操作成功',{icon:1})
+              reset()
+            }else{
+              layer.alert(data.msg,{icon:2})
+            }
+          },
+          error: function(xmlHq,status,errorThrows){
+            console.log(errorThrows)
+          }
+        });
+      }
+  	}
+  }
+
+  //通过资产番号搜索全局详情
+  function before_zj_detail(){
+  	key_code = window.event.keyCode
+  	if(key_code == 13){
+  		let a_cd = $('#a_cd').val()
+	  	if(a_cd != ''){
+	  		$.ajax({
+	  			url: '/nstd/basefunc/before_zj_detail',
+	  			data: {a_cd:a_cd},
+	  			type: 'get',
+	  			dataType: 'json',
+	  			success: function(data){
+	  				if(data.result){
+	  					$('#a_self_cd').val(data.a_self_cd)
+	  					$('#a_name').val(data.a_name)
+	  					$('#a_loc_cd').val(data.a_loc_cd)
+	  					$('#a_type_cd').val(data.a_type_cd)
+	  					$('#a_fuselage_cd').val(data.a_fuselage_cd)
+	  					$('#a_amount').val(data.a_amount)
+	  					$('#a_price').val(data.a_price)
+	  					$('#a_currency').val(data.a_currency)
+	  					$('#a_out_time').val(data.a_out_time)
+	  					$('#a_purchase_time').val((data.a_purchase_time).substr(0,10))
+	  					$('#a_funds_type').val(data.a_funds_type)
+	  					$('#a_project_cd').val(data.a_project_cd)
+	  					$('#a_budget').val(data.a_budget)
+	  					$('#a_referendum').val(data.a_referendum)
+	  					$('#a_po_cd').val(data.a_po_cd)
+	  					$('#a_brand').val(data.a_brand)
+	  					$('#a_sap_cd').val(data.a_sap_cd)
+	  					$('#a_model').val(data.a_model)
+	  					$('#a_status').val(data.a_status)
+	  					$('#a_category').val(data.a_category)
+              $('#a_depart').val(data.a_depart)
+              $('#a_action_type').val(data.a_action_type)
+              $('#a_material_id').val(data.a_material_id)
+	  					$('#a_cd').attr('readonly','')
+	  				}else{
+	  					layer.msg(data.msg,{title:'温馨提示',icon:2})
+	  				}
+	  			},
+	  			error: function(xmlHq,status,errorThrows){
+	  				console.log(errorThrows)
+	  			}
+	  		})
+	  	}
+  	}
+  }
+
+  //重置输入
+  function reset(){
+  	$('input').val('')
+  	$('#a_cd').removeAttr('readonly').focus()
+  }
+
+</script>
+{% endblock %}

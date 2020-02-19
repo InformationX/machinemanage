@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产添加</legend>
+</fieldset>
+
+<div class="layui-form mart10">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input" placeholder="请输入资产番号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">资产型号:</label>
+      <div class="layui-input-inline">
+        <input id="a_type_cd" autocomplete="off" class="layui-input" placeholder="请输入资产型号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">主体资产号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_cd" autocomplete="off" class="layui-input" placeholder="请输入主体资产番号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    
+    <div class="layui-inline">
+      <label class="layui-form-label">主体序列号:</label>
+      <div class="layui-input-inline">
+        <input id="a_main_serial" autocomplete="off" class="layui-input" placeholder="请输入主题序列号">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">当前部门:</label>
+      <div class="layui-input-inline">
+        <input id="a_dept_cd" autocomplete="off" class="layui-input" placeholder="请输入当前部门">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">存放位置:</label>
+      <div class="layui-input-inline">
+        <input id="a_loc_cd" autocomplete="off" class="layui-input" placeholder="请输入存放位置">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+  
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产状态:</label>
+      <div style="height:36px;width:190px;float:left">
+        <select id="a_state" lay-search>
+          <option value="">请选择存放位置</option>
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+          <option>D</option>
+          <option>E</option>
+        </select>
+      </div>
+      <div class="xing" style="margin-left:10px">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item layui-form-text">
+    <label class="layui-form-label">备注信息:</label>
+    <div class="layui-input-block" style="width:530px">
+      <textarea id="a_remark" placeholder="请输入备注信息" class="layui-textarea"></textarea>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-input-block fl">
+      <button class="layui-btn" onclick="asset_add()">点击添加</button>
+      <button type="reset" class="layui-btn layui-btn-primary">重置输入</button>
+    </div>
+    <div class="layui-input-block fl">
+      <a class="layui-btn" href="/b/download_template?param=add">
+        <i class="layui-icon">&#xe601;</i>模板下载
+      </a>
+      <button type="reset" class="layui-btn layui-btn-primary" id="upload_add">
+        <i class="layui-icon">&#xe67c;</i>批量入库
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var upload = ''
+  var $ = ''
+	layui.use(['layedit', 'jquery', 'upload'], function(){
+    $ = layui.jquery
+	  layer = layui.layer
+	  layedit = layui.layedit
+    upload = layui.upload
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_add',
+      url: '/b/uploadfile',
+      data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '资产设备批量入库',
+            content: '/b/upload_table_page?opr_type=add&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+	});
+
+  function asset_add(){
+    let a_cd = $('#a_cd').val()
+    let a_main_cd = $('#a_main_cd').val()
+    let a_type_cd = $('#a_type_cd').val()
+    let a_main_serial = $('#a_main_serial').val()
+    let a_dept_cd = $('#a_dept_cd').val()
+    let a_loc_cd = $('#a_loc_cd').val()
+    let a_state = $('#a_state').val()
+    let a_remark = $('#a_remark').val()
+    let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+
+    if(a_cd == ''){
+      layer.msg('资产番号不能为空!',{icon:7})
+    }else if(a_main_cd == ''){
+      layer.msg('主体资产号不能为空!',{icon:7})
+    }else if(a_type_cd == ''){
+      layer.msg('资产型号不能为空!',{icon:7})
+    }else if(a_main_serial == ''){
+      layer.msg('主体序列号不能为空!',{icon:7})
+    }else if(a_dept_cd == ''){
+      layer.msg('当前部门不能为空!',{icon:7})
+    }else if(a_loc_cd == ''){
+      layer.msg('存放位置不能为空!',{icon:7})
+    }else if(a_state == ''){
+      layer.msg('资产状态不能为空!',{icon:7})
+    }else {
+      let data = {
+        a_cd:a_cd, a_type_cd:a_type_cd, a_main_cd:a_main_cd ,a_main_serial:a_main_serial,
+        a_dept_cd:a_dept_cd,a_loc_cd:a_loc_cd,a_state:a_state,a_remark:a_remark,
+        csrfmiddlewaretoken:csrfmiddlewaretoken
+      }
+      $.ajax({
+        url: '/b/basefunc/asset_add',
+        type: 'post',
+        data: data,
+        dataType: 'json',
+        success: function(data){
+          if(data.result){
+            layer.msg('添加成功',{icon:1})
+            reset()
+          }
+        },
+        error: function(xmlHq,status,errorThrows){
+          console.log(errorThrows)
+        }
+      });
+    }
+  }
+
+  function reset(){
+    $('input[name!="csrfmiddlewaretoken"]').val('')
+    $('select').val('')
+    $('textarea').val('')
+    form.render('select')
+  }
+
+</script>
+{% endblock %}

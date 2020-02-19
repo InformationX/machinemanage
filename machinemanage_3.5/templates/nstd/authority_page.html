@@ -1,0 +1,432 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+
+{% block content %}
+  <style>
+    .padl10{padding-left: 10px}
+  </style>
+
+  <fieldset class="layui-elem-field layui-field-title atitle">
+	  <legend>权限修改</legend>
+  </fieldset>
+  
+  <div style="padding:0 10px">
+    <table lay-even lay-skin="line" lay-filter="updateFilter" id="userTable"></table>
+  </div>
+
+  <script type="text/html" id="authority">
+    <button class="layui-btn layui-btn-sm" lay-event="edit">
+      <i class="layui-icon">&#xe642;</i>编辑权限
+    </button>
+  </script>
+
+  <div id="authorityPopup" style="display: none">
+    <div class="layui-form">
+      <div class="layui-form-item padl10" style="padding-top:8px">
+        <input type="checkbox" title="基本功能" lay-filter="basefunc" id="basefunc">
+      </div>
+      <div class="layui-form-item padl10">
+        <input type="checkbox" name="basefunc" title="设备入库" lay-filter="basefunc_child" id="basefunc_add">
+        <input type="checkbox" name="basefunc" title="设备出库" lay-filter="basefunc_child" id="basefunc_out">
+        <input type="checkbox" name="basefunc" title="设备退库" lay-filter="basefunc_child" id="basefunc_back">
+        <input type="checkbox" name="basefunc" title="设备支给" lay-filter="basefunc_child" id="basefunc_zj">
+        <input type="checkbox" name="basefunc" title="支给归还" lay-filter="basefunc_child" id="basefunc_zj_revert">
+        <input type="checkbox" name="basefunc" title="借用归还" lay-filter="basefunc_child" id="basefunc_loan_revert">
+        <input type="checkbox" name="basefunc" title="设备销售" lay-filter="basefunc_child" id="basefunc_sale">
+        <input type="checkbox" name="basefunc" title="设备报废" lay-filter="basefunc_child" id="basefunc_scrap">
+        <input type="checkbox" name="basefunc" title="库房移动" lay-filter="basefunc_child" id="basefunc_storage_move">
+        <input type="checkbox" name="basefunc" title="在线移动" lay-filter="basefunc_child" id="basefunc_online_move">
+      </div>
+      <hr/>
+    </div>
+    <div class="layui-form">
+      <div class="layui-form-item padl10">
+        <input type="checkbox" title="综合查询" lay-filter="general" id="general">
+      </div>
+      <div class="layui-form-item padl10">
+        <input type="checkbox" name="general" title="总账查询" lay-filter="general_child" id="general_total">
+        <input type="checkbox" name="general" title="操作记录" lay-filter="general_child" id="general_record">
+        <input type="checkbox" name="general" title="在库查询" lay-filter="general_child" id="general_instorage">
+        <input type="checkbox" name="general" title="在线查询" lay-filter="general_child" id="general_online">
+        <input type="checkbox" name="general" title="报废查询" lay-filter="general_child" id="general_scrap">
+        <input type="checkbox" name="general" title="销售查询" lay-filter="general_child" id="general_sale">
+        <input type="checkbox" name="general" title="支给查询" lay-filter="general_child" id="general_zj">
+        <input type="checkbox" name="general" title="入库查询" lay-filter="general_child" id="general_add">
+        <input type="checkbox" name="general" title="出库查询" lay-filter="general_child" id="general_out">
+        <input type="checkbox" name="general" title="退库查询" lay-filter="general_child" id="general_back">
+        <input type="checkbox" name="general" title="借用归还" lay-filter="general_child" id="general_loan_revert">
+        <input type="checkbox" name="general" title="支给归还" lay-filter="general_child" id="general_zj_revert">
+        <input type="checkbox" name="general" title="移动查询" lay-filter="general_child" id="general_move">
+      </div>
+      <hr/>
+    </div>
+    <div class="layui-form">
+      <div class="layui-form-item padl10">
+        <input type="checkbox" title="基本设置" lay-filter="baseinfo" id="baseinfo">
+      </div>
+      <div class="layui-form-item padl10">
+        <input type="checkbox" name="baseinfo" title="部门管理" lay-filter="baseinfo_child" id="baseinfo_depart">
+        <input type="checkbox" name="baseinfo" title="位置管理" lay-filter="baseinfo_child" id="baseinfo_position">
+        <input type="checkbox" name="baseinfo" title="资产转换" lay-filter="baseinfo_child" id="baseinfo_convert">
+        <input type="checkbox" name="baseinfo" title="资产修改" lay-filter="baseinfo_child" id="baseinfo_modify">
+        <input type="checkbox" name="baseinfo" title="手持机种" lay-filter="baseinfo_child" id="baseinfo_model">
+      </div>
+      <hr/>
+    </div>
+    <div class="layui-form">
+      <div class="layui-form-item padl10">
+        <input type="checkbox" title="计量信息" lay-filter="calculate" id="calculate">
+      </div>
+      <div class="layui-form-item padl10">
+        <input type="checkbox" name="calculate" title="计量确认" lay-filter="calculate_child" id="calculate_confirm">
+        <input type="checkbox" name="calculate" title="计量导入" lay-filter="calculate_child" id="calculate_import">
+        <input type="checkbox" name="calculate" title="计量查询" lay-filter="calculate_child" id="calculate_search">
+        <input type="checkbox" name="calculate" title="计量记录" lay-filter="calculate_child" id="calculate_record">
+        <input type="checkbox" name="calculate" title="计量修改" lay-filter="calculate_child" id="calculate_modify">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var layer = ''
+    var $ = ''
+    var table = ''
+    var form = ''
+    
+    layui.use(['jquery','layer','table', 'form'],function(){
+      layer = layui.layer
+      $ = layui.jquery
+      table = layui.table
+      form = layui.form
+
+      table.render({
+        elem: '#userTable'
+        ,url: '/nstd/manage/getUser' //数据接口
+        ,cols: [[ //表头
+          {type:'numbers', title: '序号', width:60}
+          ,{field: 'user_num', title: '工号', width:130}
+          ,{field: 'user_name', title: '姓名', width:180}
+          ,{field: 'depart_name', title: '所属部门', width:100}
+          ,{field: 'user_phone', title: '联系电话', width:120}
+          ,{field: 'user_email', title: '邮箱地址', width:220}
+          ,{field: 'user_title', title: '职位职称', width:130}
+          ,{field: 'depart_id', title: '部门编号', hide: true}
+          ,{field: 'user_authority', title: '权限等级', hide: true}
+          ,{title:'操作',width:130, align:'center', toolbar:'#authority'}
+        ]],
+        where: {
+          
+        }
+      });
+
+    //编辑当前行
+    table.on('tool(updateFilter)', function(obj){
+        $('#user_num').attr('readonly','')
+        let data = obj.data;  //获取当前行数据
+        let layEvent = obj.event;
+        let tr = obj.tr;
+
+        if(layEvent == 'edit'){
+          //初始化权限弹窗数据
+          initAuthority(data.user_num)
+          //更新权限弹窗
+          layer.open({
+            type: 1,
+            title: '修改访问权限',
+            area: ['620px', '500px'],
+            content: $('#authorityPopup'),
+            btn: ['确定修改','点击取消'],
+            yes: function(index, layero){
+              updateAuthority(index,data.user_num)
+            },
+            btn2: function(index){
+              layer.close(index)
+            }
+          });
+        }
+      });
+
+      //监听基本功能选项
+      form.on('checkbox(basefunc)', function(data){
+        isChecked = data.elem.checked
+        if(isChecked){
+          $('input[name="basefunc"]').prop('checked',true)
+        }else{
+          $('input[name="basefunc"]').prop('checked',false)
+        }
+        form.render('checkbox')
+      });
+      //监听基本功能子选项
+      form.on('checkbox(basefunc_child)', function(data){
+        isChecked = data.elem.checked
+        parent_isChecked = $('#basefunc').is(':checked')
+        if(isChecked){
+          if(!parent_isChecked){
+            $('#basefunc').prop('checked',true)
+          }
+        }else{
+          let num = 0
+          $('input[name="basefunc"]').each(function(){
+            if($(this).is(':checked')){
+              num += 1
+              return false
+            }
+          })
+          if(num == 0 && parent_isChecked){
+            $('#basefunc').prop('checked',false)
+          }
+        }
+        form.render('checkbox')
+      });
+
+      //监听综合查询选项
+      form.on('checkbox(general)', function(data){
+        isChecked = data.elem.checked
+        if(isChecked){
+          $('input[name="general"]').prop('checked',true)
+        }else{
+          $('input[name="general"]').prop('checked',false)
+        }
+        form.render('checkbox')
+      });
+      //监听综合查询子选项
+      form.on('checkbox(general_child)', function(data){
+        isChecked = data.elem.checked
+        parent_isChecked = $('#general').is(':checked')
+        if(isChecked){
+          if(!parent_isChecked){
+            $('#general').prop('checked',true)
+          }
+        }else{
+          let num = 0
+          $('input[name="general"]').each(function(){
+            if($(this).is(':checked')){
+              num += 1
+              return false
+            }
+          })
+          if(num == 0 && parent_isChecked){
+            $('#general').prop('checked',false)
+          }
+        }
+        form.render('checkbox')
+      });
+
+      //监听基本信息选项
+      form.on('checkbox(baseinfo)', function(data){
+        isChecked = data.elem.checked
+        if(isChecked){
+          $('input[name="baseinfo"]').prop('checked',true)
+        }else{
+          $('input[name="baseinfo"]').prop('checked',false)
+        }
+        form.render('checkbox')
+      });
+      //监听基本信息子选项
+      form.on('checkbox(baseinfo_child)', function(data){
+        isChecked = data.elem.checked
+        parent_isChecked = $('#baseinfo').is(':checked')
+        if(isChecked){
+          if(!parent_isChecked){
+            $('#baseinfo').prop('checked',true)
+          }
+        }else{
+          let num = 0
+          $('input[name="baseinfo"]').each(function(){
+            if($(this).is(':checked')){
+              num += 1
+              return false
+            }
+          })
+          if(num == 0 && parent_isChecked){
+            $('#baseinfo').prop('checked',false)
+          }
+        }
+        form.render('checkbox')
+      });
+
+      //监听计量管理选项
+      form.on('checkbox(calculate)', function(data){
+        isChecked = data.elem.checked
+        if(isChecked){
+          $('input[name="calculate"]').prop('checked',true)
+        }else{
+          $('input[name="calculate"]').prop('checked',false)
+        }
+        form.render('checkbox')
+      });
+      //监听计量管理子选项
+      form.on('checkbox(calculate_child)', function(data){
+        isChecked = data.elem.checked
+        parent_isChecked = $('#calculate').is(':checked')
+        if(isChecked){
+          if(!parent_isChecked){
+            $('#calculate').prop('checked',true)
+          }
+        }else{
+          let num = 0
+          $('input[name="calculate"]').each(function(){
+            if($(this).is(':checked')){
+              num += 1
+              return false
+            }
+          })
+          if(num == 0 && parent_isChecked){
+            $('#calculate').prop('checked',false)
+          }
+        }
+        form.render('checkbox')
+      });
+  	});
+
+    //获取初始化的权限，默认都不选中
+    function getOriginAuthority (){
+      let data = {
+        'basefunc':false,
+        'basefunc_add':false,
+        'basefunc_out':false,
+        'basefunc_back':false,
+        'basefunc_zj':false,
+        'basefunc_zj_revert':false,
+        'basefunc_loan_revert':false,
+        'basefunc_sale':false,
+        'basefunc_scrap':false,
+        'basefunc_storage_move':false,
+        'basefunc_online_move':false,
+
+        'general':false,
+        'general_total':false,
+        'general_record':false,
+        'general_instorage':false,
+        'general_online':false,
+        'general_scrap':false,
+        'general_sale':false,
+        'general_zj':false,
+        'general_add':false,
+        'general_out':false,
+        'general_back':false,
+        'general_loan_revert':false,
+        'general_zj_revert':false,
+        'general_move':false,
+
+        'baseinfo':false,
+        'baseinfo_depart':false,
+        'baseinfo_position':false,
+        'baseinfo_convert':false,
+        'baseinfo_modify':false,
+        'baseinfo_model':false,
+
+        'calculate':false,
+        'calculate_confirm':false,
+        'calculate_import':false,
+        'calculate_search':false,
+        'calculate_record':false,
+        'calculate_modify':false
+      }
+      return data
+    }
+    
+    function initAuthority (user_num){
+      let dataAuthority = ''
+      $.ajax({
+        url: '/nstd/manage/getAuthority',
+        data: {user_num: user_num},
+        type: 'get',
+        dataType: 'json',
+        success: function(data){
+          if(data.result){
+            dataAuthority = data.user_authority
+          }else{
+            dataAuthority = getOriginAuthority()
+          }
+          for(key in dataAuthority){
+            $('#' + key).prop('checked',dataAuthority[key])
+          }
+          form.render('checkbox')
+        },
+        error: function(xmlHq,status,errorThrows){
+          console.log(errorThrows)
+        }
+      })
+    }
+
+    //更新权限
+    function updateAuthority (index, user_num){
+      let postData = {
+        user_num: user_num,
+        data: JSON.stringify(formateAuthority()),
+        csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').val()
+      }
+      $.ajax({
+        url: '/nstd/manage/updateAuthority',
+        type: 'post',
+        data: postData,
+        dataType: 'json',
+        success: function(data){
+          if(data.result){
+            layer.close(index)
+            layer.msg('操作成功',{icon:1})
+          }else{
+            layer.alert('操作失败!',{title:'温馨提示',icon:7})
+          }
+        },
+        error: function(xmlHq,status,errorThrows){
+          console.log(status)
+        }
+      });
+    }
+
+    //获取权限数据
+    function formateAuthority (){
+      let data = {}
+      data["basefunc"] = $('#basefunc').is(':checked')
+      data['basefunc_add'] = $('#basefunc_add').is(':checked')
+      data['basefunc_out'] = $('#basefunc_out').is(':checked')
+      data['basefunc_back'] = $('#basefunc_back').is(':checked')
+      data['basefunc_zj'] = $('#basefunc_zj').is(':checked')
+      data['basefunc_zj_revert'] = $('#basefunc_zj_revert').is(':checked')
+      data['basefunc_loan_revert'] = $('#basefunc_loan_revert').is(':checked')
+      data['basefunc_sale'] = $('#basefunc_sale').is(':checked')
+      data['basefunc_scrap'] = $('#basefunc_scrap').is(':checked')
+      data['basefunc_storage_move'] = $('#basefunc_storage_move').is(':checked')
+      data['basefunc_online_move'] = $('#basefunc_online_move').is(':checked')
+
+      data['general'] = $('#general').is(':checked')
+      data['general_total'] = $('#general_total').is(':checked')
+      data['general_record'] = $('#general_record').is(':checked')
+      data['general_instorage'] = $('#general_instorage').is(':checked')
+      data['general_online'] = $('#general_online').is(':checked')
+      data['general_scrap'] = $('#general_scrap').is(':checked')
+      data['general_sale'] = $('#general_sale').is(':checked')
+      data['general_zj'] = $('#general_zj').is(':checked')
+      data['general_add'] = $('#general_add').is(':checked')
+      data['general_out'] = $('#general_out').is(':checked')
+      data['general_back'] = $('#general_back').is(':checked')
+      data['general_loan_revert'] = $('#general_loan_revert').is(':checked')
+      data['general_zj_revert'] = $('#general_zj_revert').is(':checked')
+      data['general_move'] = $('#general_move').is(':checked')
+
+      data['baseinfo'] = $('#baseinfo').is(':checked')
+      data['baseinfo_depart'] = $('#baseinfo_depart').is(':checked')
+      data['baseinfo_position'] = $('#baseinfo_position').is(':checked')
+      data['baseinfo_convert'] = $('#baseinfo_convert').is(':checked')
+      data['baseinfo_modify'] = $('#baseinfo_modify').is(':checked')
+      data['baseinfo_model'] = $('#baseinfo_model').is(':checked')
+
+      data['calculate'] = $('#calculate').is(':checked')
+      data['calculate_confirm'] = $('#calculate_confirm').is(':checked')
+      data['calculate_import'] = $('#calculate_import').is(':checked')
+      data['calculate_search'] = $('#calculate_search').is(':checked')
+      data['calculate_record'] = $('#calculate_record').is(':checked')
+      data['calculate_modify'] = $('#calculate_modify').is(':checked')
+      return data
+    }
+
+
+
+  	function reset(){
+  		$('input[name!="csrfmiddlewaretoken"]').val('')
+  	}
+  </script>
+
+{% endblock %}

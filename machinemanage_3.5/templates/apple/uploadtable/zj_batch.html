@@ -1,0 +1,163 @@
+<table>
+	<tr>
+		<td>
+			<div class="layui-form">
+				<div class="layui-form-item layui-form-text">
+					<div class="layui-inline pad10">
+						<textarea style="width:150px;height:500px" id="a_cd_str" placeholder="请输入资产番号" class="layui-textarea" onkeyup="render()"></textarea>
+					</div>
+				</div>
+			</div>
+		</td>
+		<td valign="top">
+			<script type="text/html" id="excel_operation">
+			  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+			</script>
+
+			<div id="uploadwrap" class="hid" style="padding:0 10px">
+			  <table lay-even lay-skin="line" lay-filter="excel_filter" id="zj_table"></table>
+			  <button class="layui-btn" onclick="upload_zj()">
+				<i class="layui-icon">&#xe67c;</i>点击上传
+			  </button>
+			</div>
+		</td>
+	</tr>
+</table>
+
+<script>
+	var $ = ''
+	var table = ''
+	var hasUpload = false
+	layui.use(['layedit', 'jquery', 'table', 'element'],function(){
+		$ = layui.jquery;
+		table = layui.table;
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+
+	});
+
+	//渲染表格数据
+	function render(){
+		keyCode = window.event.keyCode
+		if(keyCode == 13 || keyCode == 8 || keyCode == 46){
+			let assetList = []
+			let arrayList = $('#a_cd_str').val().split('\n')
+			for(let i=0;i<arrayList.length;i++){
+				if(arrayList[i] != ''){
+					assetList.push(arrayList[i])
+				}
+			}
+
+			if(assetList.length > 0){
+				$('#uploadwrap').removeClass('hid')
+				table.render({
+			      elem: '#zj_table'
+			      ,page:false
+			      ,url: '/b/basefunc/get_detail' //数据接口
+			      ,cols: [[ //表头
+			      	{type:'numbers', title: '序号', width:60, edit: false}
+			        ,{field: 'a_cd', title: '资产番号', width:100}
+			        ,{field: 'a_type_cd', title: '型号', width:100}
+			        ,{field: 'a_fuselage_cd', title: '机身号', width:120}
+			        ,{field: 'a_action_loc', title: '当前位置', width:130}
+			        ,{field: 'a_action_state', title: '状态', width:80, edit: true}
+			        ,{field: 'a_main_cd', title: '主体资产号', width:100, edit: true}
+			        ,{field: 'a_main_serial', title: '主体序列号', width:130, edit: true}
+			        ,{field: 'a_zj_object', title: '被支给方', width:200, edit: true}
+					,{field: 'a_action_remark', title: '备注信息', width:200, edit: true}
+					,{field: 'a_action_type', title: '行为状态', width:100}
+			        ,{title:'操作', width:80, align:'center', toolbar:'#excel_operation'}
+			      ]],
+			      where:{
+			      	assetList: JSON.stringify(assetList)
+			      }
+			    });
+			}
+		}
+	}
+
+	function collect_data(){
+		let zj_list = []
+		let flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let a_cd = $(this).find('td[data-field="a_cd"]').text()
+			let a_action_state = $(this).find('td[data-field="a_action_state"]').text()
+			let a_main_cd = $(this).find('td[data-field="a_main_cd"]').text()
+			let a_main_serial = $(this).find('td[data-field="a_main_serial"]').text()
+			let a_zj_object = $(this).find('td[data-field="a_zj_object"]').text()
+			let a_action_type = $(this).find('td[data-field="a_action_type"]').text()
+			let a_action_remark = $(this).find('td[data-field="a_action_remark"]').text()
+			if(a_action_type != '在库'){
+				alert(`第${index+1}行不是在库状态!`)
+				flag = false
+				return false
+			}else if(a_main_cd == ''){
+				alert(`第${index+1}行主体资产号不能为空!`)
+				flag = false
+				return false
+			}else if(a_main_serial == ''){
+				alert(`第${index+1}行主体序列号不能为空!`)
+				flag = false
+				return false
+			}else if(a_zj_object == ''){
+				alert(`第${index+1}行被支给方不能为空!`)
+				flag = false
+				return false
+			}else{
+				zj_list.push({
+					a_cd:a_cd,a_action_state:a_action_state,a_main_cd:a_main_cd,
+					a_main_serial:a_main_serial,a_zj_object:a_zj_object,a_action_remark:a_action_remark
+				});
+			}
+		});
+		if(flag){
+			return zj_list
+		}else{
+			return []
+		}
+	}
+
+	function upload_zj(){
+		if(hasUpload){
+			alert('您已成功上传过一次，不能重复上传!')
+			return
+		}
+		let zj_list = collect_data()
+		let csrf = $('input[name="csrfmiddlewaretoken"]').val()
+		if(zj_list.length > 0){
+			$.ajax({
+				url: '/b/basefunc/upload_zj',
+				type: 'post',
+				dataType: 'json',
+				data: {zj_list: JSON.stringify(zj_list), csrfmiddlewaretoken: csrf},
+				success: function(data){
+					if(data.result){
+						hasUpload = true
+						alert(`支给成功，数量${data.num}`)
+						console.log(data)
+					}else{
+						alert('操作失败')
+					}
+				},
+				error: function(xmlHq,status,errorThrows){
+					console.log(xmlHq)
+				}
+			});
+		}
+	}
+
+</script>

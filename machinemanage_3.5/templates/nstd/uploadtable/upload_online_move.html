@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 设备批量移动信息Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_online_move()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var tmp_file = '{{ tmp_file }}'
+	var tableIns = ''
+	var $ = ''
+	var hasUploaded = false
+
+	layui.use(['jquery','layer','table','upload'],function(){
+		table = layui.table
+		layer = layui.layer
+		upload = layui.upload
+		$ = layui.jquery
+		
+		tableIns = table.render({
+	      elem: '#uploadtable'
+	      ,page: false
+	      ,even: true
+	      ,url: '/nstd/basefunc/get_online_move_data' //数据接口
+	      ,cols: [[ //表头
+	        {type: 'numbers', title: '序号', width:60}
+	        ,{field: 'a_cd', title: '资产番号', width:100}
+	        ,{field: 'a_type_cd', title: '资产型号', width:130}
+	        ,{field: 'a_name', title: '资产名称', width:180}
+	        ,{field: 'a_action_state', title: '当前状态', width:100}
+	        ,{field: 'a_action_category', title: '折旧类别', width:100}
+	        ,{field: 'a_origin_depart', title: '当前部门', width:120}
+	        ,{field: 'a_action_depart', title: '移动部门', width:120, edit:true}
+	        ,{field: 'a_origin_loc', title: '当前位置', width:120}
+	        ,{field: 'a_action_loc', title: '移动位置', width:120, edit:true}
+	        ,{field: 'a_action_user', title: '领用人员', width:120, edit:true}
+	        ,{field: 'a_action_charge', title: '主管确认', width:120, edit:true}
+	        ,{field: 'a_action_model', title: '使用机种', width:120, edit:true}
+	        ,{field: 'a_action_remark', title: '备注信息', width:120, edit:true}
+	        ,{field: 'a_action_type', title: '库存状态', width:120}
+	        ,{field: 'a_material_id', title: '资产ID编号', width:100, hide:true}
+	        ,{title: '操作', width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {tmp_file:tmp_file}
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+		layer.msg('请仔细核对数据无误后提交')
+	});
+	
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let tmp_list = []
+			a_cd = $(this).find('td[data-field="a_cd"]').text()							 	 //资产番号
+			a_action_state = $(this).find('td[data-field="a_action_state"]').text()	 		 //当前状态
+			a_origin_depart = $(this).find('td[data-field="a_origin_depart"]').text().trim() //当前部门
+			a_action_depart = $(this).find('td[data-field="a_action_depart"]').text().trim() //移动部门
+			a_origin_loc = $(this).find('td[data-field="a_origin_loc"]').text()		 		 //当前位置
+			a_action_loc = $(this).find('td[data-field="a_action_loc"]').text()				 //移动位置
+			a_material_id = $(this).find('td[data-field="a_material_id"]').text()			 //资产ID编号
+			a_action_type = $(this).find('td[data-field="a_action_type"]').text()			 //库存状态
+			a_action_category = $(this).find('td[data-field="a_action_category"]').text()
+			a_action_user = $(this).find('td[data-field="a_action_user"]').text()
+			a_action_charge = $(this).find('td[data-field="a_action_charge"]').text()
+			a_action_model = $(this).find('td[data-field="a_action_model"]').text()
+			a_action_remark = $(this).find('td[data-field="a_action_remark"]').text()
+			
+			tmp_list[0] = a_cd
+			tmp_list[1] = a_action_state
+			tmp_list[2] = a_origin_depart
+			tmp_list[3] = a_action_depart
+			tmp_list[4] = a_origin_loc
+			tmp_list[5] = a_action_loc
+			tmp_list[6] = a_action_category
+			tmp_list[7] = a_action_user
+			tmp_list[8] = a_action_charge
+			tmp_list[9] = a_action_model
+			tmp_list[10] = a_action_remark
+			tmp_list[11] = a_material_id
+
+			if(a_action_type != '已出库' && a_action_type != '在线移动' && a_action_type != '资产转换'){
+				alert('第' + (index + 1) + '行不处于在线(出库)状态,无法移动!')
+				flag = false
+				return false
+			}else if(a_cd == ''){
+				alert('第' + (index + 1) + '行资产番号不能为空!')
+				flag = false
+				return false
+			}else if(a_action_depart == ''){
+				alert('第' + (index + 1) + '行移动部门不能为空!')
+				flag = false
+				return false
+			}else if(a_action_loc == ''){
+				alert('第' + (index + 1) + '行移动位置不能为空!')
+				flag = false
+				return false
+			}else if(a_action_user == ''){
+				alert('第' + (index + 1) + '行领用人员不能为空!')
+				flag = false
+				return false
+			}else if(a_action_charge == ''){
+				alert('第' + (index + 1) + '行主管确认不能为空!')
+				flag = false
+				return false
+			}else if(a_origin_depart != 'PD' || a_action_depart != 'PD'){
+				let authority_level = '{{request.session.authority_level}}'
+				if(parseInt(authority_level) != 1){
+					alert('当前部门和移动部门必须是PD!')
+					flag = false
+					return false
+				}
+			}
+
+			table_data.push(tmp_list)
+		});
+		if(!flag){
+			return []
+		}else{
+			return table_data
+		}
+	}
+
+	//点击上传按钮开始支给
+	function upload_online_move(){
+		if(hasUploaded){
+			layer.alert('您已经成功上传一次，不能重复上传！',{title:'温馨提示',icon:7})
+			return
+		}
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		if(table_data.length > 0){
+			if(table_data.length > 500){
+				layer.alert('上传数量单次不能超过500条！',{title:'温馨提示',icon:7})
+				return
+			}else{
+				data = {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken}
+				$.ajax({
+					url: '/nstd/basefunc/upload_online_move',
+					type: 'post',
+					dataType: 'json',
+					data: data,
+					success: function(data){
+						if(data.result){
+							//layer.msg('批量上传成功,上传数量:' + data.num, {icon:1})
+							alert(`批量上传成功,上传数量:${data.num}`)
+							hasUploaded = true
+							$('#uploadwrap').html('')
+						}else{
+							layer.msg(data.msg,{title:'温馨提示',icon:2,time:5000})
+						}
+					},
+					error: function(xmlHq,status,errorThrows){
+						console.log(errorThrows)
+					}
+				});
+			}
+		}
+	}
+</script>
+
+{% endblock %}

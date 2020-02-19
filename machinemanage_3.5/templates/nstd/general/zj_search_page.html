@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+<style>
+  .mart-8{margin-top:-8px}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>支给信息查询</legend>
+</fieldset>
+
+<div class="layui-form mart10" style="min-width: 1200px">
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">起始日期:</label>
+      <div class="layui-input-inline">
+        <input id="startDate" autocomplete="off" class="layui-input" placeholder="请输入起始日期">
+      </div>
+      <div class="xing">*</div>
+    </div>
+    <div class="layui-inline">
+      <label class="layui-form-label">结束日期:</label>
+      <div class="layui-input-inline">
+        <input id="endDate" autocomplete="off" class="layui-input" placeholder="请输入结束日期">
+      </div>
+      <div class="xing">*</div>
+    </div>
+  </div>
+
+  <div class="layui-form-item">
+    <div class="layui-inline">
+      <label class="layui-form-label">资产番号:</label>
+      <div class="layui-input-inline">
+        <input id="a_cd" autocomplete="off" class="layui-input">
+      </div>
+      <div class="xing v-hid">*</div>
+    </div>
+    <div class="layui-inline marl110">
+      <button class="layui-btn mart-8 w190" onclick="get_zj_data()">点击搜索</button>
+    </div>
+    <div class="layui-inline marl110">
+      <button class="layui-btn mart-8 w190" onclick="zj_export()">开始下载</button>
+    </div>
+  </div>
+
+  <div style="padding:0 10px">
+  	<hr/>
+  </div>
+</div>
+
+<div style="padding: 0 10px">
+  <table id="demo"></table>
+</div>
+
+<script>
+  var layer = ''
+  var layedit = ''
+  var laydate = ''
+  var form = ''
+  var table = ''
+  var tableIns = ''
+  var $ = ''
+
+  var is_hidden = false
+  var authority_level = '{{request.session.authority_level}}'
+  var dept_name = '{{request.session.dept_name}}'
+  if(authority_level != 1 && dept_name != '设备购买部'){
+    is_hidden = true
+  }
+
+  layui.use(['layedit', 'jquery', 'laydate', 'table', 'form'], function(){
+    $ = layui.jquery
+  	layer = layui.layer
+  	layedit = layui.layedit
+  	laydate = layui.laydate
+    table = layui.table
+    form = layui.form
+
+  	let startDate = one_month_ago()
+	  let endDate = getToday()
+
+	  laydate.render({
+	    elem: '#startDate',
+	    value: startDate
+	  });
+
+	  laydate.render({
+	    elem: '#endDate',
+	    value: endDate
+	  });
+  });
+
+  //根据条件搜索支给信息
+  function get_zj_data(){
+    /*
+    let beginDate = $('#beginDate').val()
+    let endDate = $('#endDate').val()
+    let vde = vde_is_null(['beginDate','endDate'])
+    if(vde){
+      let a_cd = $('#a_cd').val()
+      let a_self_cd = $('#a_self_cd').val()
+      let a_type_cd = $('#a_type_cd').val()
+      let data = {
+        beginDate:beginDate,endDate:endDate,a_cd:a_cd,a_self_cd:a_self_cd,a_type_cd:a_type_cd,
+      }
+
+      tableIns.reload({
+        where: data,
+        page: {}
+      });
+    }
+    */
+
+    let a_cd = $('#a_cd').val()
+    let startDate = $('#startDate').val()
+    let endDate = $('#endDate').val()
+
+    tableIns = table.render({
+      elem: '#demo'
+      ,url: '/nstd/general/get_zj_data' //数据接口
+      ,page: true //开启分页
+      ,limit: 100
+      ,limits: [100,200,300,400,500,600,700,800,900,1000]
+      ,cols: [[ //表头
+        {type: 'numbers', title: '序号', width:80}
+        ,{field: 'a_cd', title: '资产番号', width:100}
+        ,{field: 'a_self_cd', title: '编号', width:100}
+        ,{field: 'a_name', title: '名称', width:200}
+        
+        ,{field: 'a_type_cd', title: '资产型号', width:150}
+        ,{field: 'a_fuselage_cd', title: '机身号码', width: 150}
+        ,{field: 'a_amount', title: '单位', width: 60}
+
+        ,{field: 'a_price', title: '单价', width: 100, hide: is_hidden}
+        ,{field: 'a_currency', title: '币种', width: 70, hide: is_hidden}
+        ,{field: 'a_out_time', title: '出厂时间', width: 160}
+        ,{field: 'a_purchase_time', title: '购入时间', width: 160}
+
+        ,{field: 'a_brand', title: '品牌', width: 80}
+        ,{field: 'a_supplier', title: '供应商', width: 200}
+        ,{field: 'a_action_supplier', title: '被支给方', width: 100}
+
+        ,{field: 'a_action_state', title: '状态', width: 60}
+        ,{field: 'a_action_loc', title: '位置代码', width: 150}
+        ,{field: 'a_record_time', title: '记录时间', width: 150}
+
+        ,{field: 'a_opr_user', title: '操作员', width: 150}
+        ,{field: 'a_model', title: '机种', width: 150}
+        ,{field: 'a_budget', title: '预算号', width: 150}
+
+        ,{field: 'a_referendum', title: '请示书号', width: 150}
+        ,{field: 'a_po_cd', title: 'PO号', width: 150}
+        ,{field: 'a_sap_cd', title: 'SAP番号', width: 150}
+
+        ,{field: 'a_project_cd', title: '工位(工程)', width: 100}
+        ,{field: 'a_record_time', title: '记录时间', width: 180}
+        ,{field: 'a_opr_user', title: '记录人员', width: 150}
+      ]],
+      where:{
+        a_cd: a_cd, startDate: startDate, endDate: endDate
+      }
+    });
+
+  }
+
+  //支给数据导出
+  function zj_export(){
+    var a_cd = $('#a_cd').val()
+    var startDate = $('#startDate').val()
+    var endDate = $('#endDate').val()
+    var a = document.createElement('a')
+    var url = `/nstd/general/zj_export?a_cd=${a_cd}&startDate=${startDate}&endDate=${endDate}`
+    a.href = url
+    a.click()
+  }
+
+  //重置输入
+  function reset(){
+  	$('input').val('')
+  	$('#a_cd').removeAttr('readonly').focus()
+  }
+
+</script>
+{% endblock %}

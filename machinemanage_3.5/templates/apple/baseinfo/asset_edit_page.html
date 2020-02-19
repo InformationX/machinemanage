@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+<style>
+  .atitle{margin:20px 10px}
+  .lh88_fs24{line-height: 88px;font-size: 24px}
+  .lh88_fs24:hover{cursor:pointer}
+  .bor_e6e{border:1px solid #e6e6e6}
+</style>
+
+<fieldset class="layui-elem-field layui-field-title atitle">
+  <legend>资产变更</legend>
+</fieldset>
+
+<div style="padding-left:40px">
+  <div class="layui-row">
+    <div class="layui-col-md2 type lh88_fs24" onclick="edit('base')">基础信息</div>
+    <div class="layui-col-md2 type marl10 lh88_fs24" onclick="edit('out')">资产出库</div>
+    <div class="layui-col-md2 type marl10 lh88_fs24" onclick="edit('out_back')">资产退库</div>
+    <div class="layui-col-md2 type marl10 lh88_fs24" onclick="edit('zj')">资产支给</div>
+    <div class="layui-col-md2 type marl10 lh88_fs24" onclick="edit('zj_back')">支给归还</div>
+  </div>
+  <div class="layui-row">
+    <table class="mart20">
+      <tr>
+        <td align="center">
+          <div class="layui-card bor_e6e">
+            <div class="layui-card-header">主体资产号、主体序列号、当前部门、资产位置</div>
+            <div class="layui-card-body">
+              <a class="layui-btn" href="/b/download_template?param=edit_loc">模板下载</a>
+              <button class="layui-btn" id="upload_loc">批量上传</button>
+            </div>
+          </div>
+        </td>
+        <td>
+          
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<script>
+	layui.use(['form', 'layedit', 'laydate', 'element', 'upload'], function(){
+	  var form = layui.form
+	  ,layer = layui.layer
+	  ,layedit = layui.layedit
+	  ,laydate = layui.laydate
+    ,upload = layui.upload
+	  
+	  //监听提交
+	  form.on('submit(demo1)', function(data){
+	    layer.alert(JSON.stringify(data.field), {
+	      title: '最终的提交信息'
+	    });
+	    return false;
+	  });
+
+    //数据上传
+    uploadInst = upload.render({
+      elem: '#upload_loc',
+      url: '/b/uploadfile',
+      data: {
+        'csrfmiddlewaretoken': '{{ csrf_token }}'
+      },
+      accept: 'file',
+      before: function(obj){
+        layer.load();
+      },
+      done: function(res){
+        layer.closeAll('loading');
+        let result = res.result
+        if(result){ //文件上传成功
+          let tmp_file = res.tmp_file;  
+          //弹出即全屏
+          var index = layer.open({
+            type: 2,
+            title: '批量修改资产位置',
+            content: '/b/upload_table_page?opr_type=edit_loc&tmp_file=' + tmp_file,
+            area: ['320px', '195px'],
+            maxmin: true
+          });
+          layer.full(index);
+        }
+      },
+      error:function(){
+        layer.closeAll('loading');
+      }
+    });
+
+	});
+
+  function edit(opr_type){
+    if(opr_type == 'base'){
+      title = '修改基础信息'
+    }else if(opr_type == 'out'){
+      title = '修改出库信息'
+    }else if(opr_type == 'out_back'){
+      title = '修改退库信息'
+    }else if(opr_type == 'zj'){
+      title = '修改支给信息'
+    }else if(opr_type == 'zj_back'){
+      title = '修改支给归还'
+    }
+    layer.open({
+      type: 2,
+      shadeClose: true,
+      title: title,
+      area: ['700px','560px'],
+      content: '/b/baseinfo/edit?opr_type=' + opr_type
+    });
+  }
+
+</script>
+{% endblock %}

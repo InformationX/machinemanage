@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+{% load staticfiles %}
+{% block content %}
+
+{% csrf_token %}
+<!-- 设备入库信息Excel数据展示 -->
+<script type="text/html" id="excel_operation">
+  <button class="layui-btn layui-btn-danger layui-btn-sm" lay-event="excel_del">删除</button>
+</script>
+
+<div id="uploadwrap" style="padding:0 10px">
+  <table lay-even lay-skin="line" lay-filter="excel_filter" id="uploadtable"></table>
+  <button class="layui-btn" onclick="upload_add()">
+	<i class="layui-icon">&#xe67c;</i>点击上传
+  </button>
+</div>
+
+<script>
+	var table = ''
+	var layer = ''
+	var $ = ''
+	var hasUploaded = false
+	var tmp_file = '{{ tmp_file }}'
+	hasUploaded = false
+
+	layui.use(['jquery','layer','table'],function(){
+		table = layui.table
+		layer = layui.layer
+		$ = layui.jquery
+
+		table.render({
+	      elem: '#uploadtable'
+	      ,page:false
+	      ,url: '/nstd/calculate/get_cal_csv_data' //数据接口
+	      ,cols: [[ //表头
+	      	{type:'numbers', title: '序号', width:60, edit: false}
+	        ,{field: 'a_cd', title: '资产番号', width:100}
+	        ,{field: 'a_type_cd', title: '资产型号', width:100, edit: true}
+	        ,{field: 'a_name', title: '资产名称',width:220, edit: true}
+	        ,{field: 'a_fuselage_cd', title: '机身号',width:180, edit: true}
+	        ,{field: 'a_self_cd', title: '资产编号',width:120, edit: true}
+	        ,{field: 'c_method', title: '计量方式',width:120, edit: true}
+	        ,{field: 'c_date', title: '计量日期',width:120, edit: true}
+	        ,{field: 'c_end_date', title: '到期日期',width:120, edit: true}
+	        ,{field: 'c_use_depart', title: '使用部门',width:120, edit: true}
+	        ,{field: 'c_status', title: '计量状态',width:120, edit: true}
+	        ,{field: 'c_certificate', title: '计量证书',width:120, edit: true}
+	        ,{field: 'a_need_cal', title: '计量确认',width:120}
+	        ,{field: 'a_material_id', title: '资产ID序号',width:120, hide: true}
+	        ,{title:'操作',width:80, align:'center', toolbar:'#excel_operation'}
+	      ]],
+	      where: {
+	        tmp_file:tmp_file
+	      }
+	    });
+
+		//删除当前行
+		table.on('tool(excel_filter)', function(obj){
+		    let data = obj.data;  //获取当前行数据
+		    let layEvent = obj.event;
+		    let tr = obj.tr;
+
+		    if(layEvent == 'excel_del'){
+		      layer.confirm('确认要删除该行吗？',{icon:3},function(index){
+		        obj.del();
+		        layer.close(index);
+		        //向服务端发送删除指令
+		        
+		      });
+		    }
+		});
+	})
+
+	//获取编辑后的表格数据
+	function get_all_table_data(){
+		let table_data = []
+		$('#uploadwrap tbody tr').each(function(){
+			let tmp_dict = {}
+			tmp_dict['c_method'] = $(this).find('td[data-field="c_method"]').text()
+			tmp_dict['c_date'] = $(this).find('td[data-field="c_date"]').text()
+			tmp_dict['c_end_date'] = $(this).find('td[data-field="c_end_date"]').text()
+			tmp_dict['c_use_depart'] = $(this).find('td[data-field="c_use_depart"]').text()
+			tmp_dict['c_status'] = $(this).find('td[data-field="c_status"]').text()
+			tmp_dict['c_certificate'] = $(this).find('td[data-field="c_certificate"]').text()
+			tmp_dict['c_material_id'] = $(this).find('td[data-field="a_material_id"]').text()
+			table_data.push(tmp_dict)
+		});
+		return table_data
+	}
+
+	//点击上传按钮开始上传
+	function upload_add(){
+		if(hasUploaded){
+			layer.msg('您已成功上传过一次，不能重复上传!',{title:'温馨提示',icon:7})
+			return
+		}else if(!vde_table()){
+			return
+		}
+		let csrfmiddlewaretoken = $('input[name="csrfmiddlewaretoken"]').val()
+		table_data = get_all_table_data()
+		$.ajax({
+			url: '/nstd/calculate/cal_upload_add',
+			type: 'post',
+			dataType: 'json',
+			data: {table_data:JSON.stringify(table_data),csrfmiddlewaretoken:csrfmiddlewaretoken},
+			success: function(data){
+				if(data.num > 0){
+					//layer.msg('批量上传成功,上传数量:' + data.num, {icon:1})
+					alert(`批量上传成功,上传数量:${data.num}`)
+					hasUploaded = true
+				}else{
+					layer.alert('操作失败!',{title:'温馨提示',icon:2})
+				}
+			},
+			error: function(xmlHq,status,errorThrows){
+				console.log(errorThrows)
+			}
+		})
+	}
+
+	//验证资产是否入库
+	function vde_table(){
+		flag = true
+		$('#uploadwrap tbody tr').each(function(index){
+			let a_cd = $(this).find('td[data-field="a_cd"]').text()
+			let a_material_id = $(this).find('td[data-field="a_material_id"]').text()
+			let a_need_cal = $(this).find('td[data-field="a_need_cal"]').text()
+			let c_method = $(this).find('td[data-field="c_method"]').text()
+			let c_date = $(this).find('td[data-field="c_date"]').text()
+			let c_end_date = $(this).find('td[data-field="c_end_date"]').text()
+			if(a_material_id == ''){
+				layer.alert('第' + (index + 1) + '行资产:' + a_cd + '未入库!')
+				$(this).addClass('bgred').addClass('bgfff')
+				flag = false
+				return false
+			}else if(a_need_cal == '未确认'){
+				layer.alert('第' + (index + 1) + '行资产:' + a_cd + '计量未确认!')
+				$(this).addClass('bgred').addClass('bgfff')
+				flag = false
+				return false
+			}else if(c_method == ''){
+				layer.alert('第' + (index + 1) + '行资产:' + a_cd + '计量方式不能为空!')
+				flag = false
+				return false
+			}else if(c_date == ''){
+				layer.alert('第' + (index + 1) + '行资产:' + a_cd + '计量日期不能为空!')
+				flag = false
+				return false
+			}else if(c_end_date == ''){
+				layer.alert('第' + (index + 1) + '行资产:' + a_cd + '到期日期不能为空!')
+				flag = false
+				return false
+			}
+		})
+		return flag
+	}
+</script>
+
+{% endblock %}
