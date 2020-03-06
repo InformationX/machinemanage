@@ -167,7 +167,12 @@ def zj_export(request):
 		sheet.write(i+1,7,data[i]['a_zj_object'])
 		sheet.write(i+1,8,data[i]['a_action_remark'])
 		sheet.write(i+1,9,data[i]['a_opr_user'])
-		sheet.write(i+1,10,data[i]['a_add_time'])
+
+		a_add_time = data[i]['a_add_time']
+		if a_add_time and len(a_add_time) > 10:
+			a_add_time = a_add_time[:10]
+
+		sheet.write(i+1,10,a_add_time)
 
 	#在服务器端保存Excel文件
 	filename = '支给数据导出_{0}.xls'.format(b_name)
@@ -211,7 +216,12 @@ def zj_back_export(request):
 		sheet.write(i+1,7,data[i]['a_action_loc'])
 		sheet.write(i+1,8,data[i]['a_action_remark'])
 		sheet.write(i+1,9,data[i]['a_opr_user'])
-		sheet.write(i+1,10,data[i]['a_add_time'])
+
+		a_add_time = data[i]['a_add_time']
+		if a_add_time and len(a_add_time) > 10:
+			a_add_time = a_add_time[:10]
+
+		sheet.write(i+1,10,a_add_time)
 
 	#在服务器端保存Excel文件
 	filename = '支给归还导出_{0}.xls'.format(b_name)
@@ -258,7 +268,12 @@ def out_export(request):
 		sheet.write(i+1,10,data[i]['a_confirm_user'])
 		sheet.write(i+1,11,data[i]['a_action_remark'])
 		sheet.write(i+1,12,data[i]['a_opr_user'])
-		sheet.write(i+1,13,data[i]['a_add_time'])
+
+		a_add_time = data[i]['a_add_time']
+		if a_add_time and len(a_add_time) > 10:
+			a_add_time = a_add_time[:10]
+
+		sheet.write(i+1,13,a_add_time)
 
 	#在服务器端保存Excel文件
 	filename = '出库信息导出_{0}.xls'.format(b_name)
@@ -304,7 +319,12 @@ def out_back_export(request):
 		sheet.write(i+1,9,data[i]['a_confirm_user'])
 		sheet.write(i+1,10,data[i]['a_action_remark'])
 		sheet.write(i+1,11,data[i]['a_opr_user'])
-		sheet.write(i+1,12,data[i]['a_add_time'])
+
+		a_add_time = data[i]['a_add_time']
+		if a_add_time and len(a_add_time) > 10:
+			a_add_time = a_add_time[:10]
+			
+		sheet.write(i+1,12,a_add_time)
 
 	#在服务器端保存Excel文件
 	filename = '退库信息导出_{0}.xls'.format(b_name)
@@ -349,7 +369,12 @@ def total_export(request):
 		sheet.write(i+1,6,data[i]['a_action_model'])
 		sheet.write(i+1,7,data[i]['a_action_loc'])
 		sheet.write(i+1,8,data[i]['a_action_state'])
-		sheet.write(i+1,9,data[i]['a_add_time'])
+
+		a_add_time = data[i]['a_add_time']
+		if a_add_time and len(a_add_time) > 10:
+			a_add_time = a_add_time[:10]
+		sheet.write(i+1,9,a_add_time)
+
 		sheet.write(i+1,10,data[i]['a_action_remark'])
 		sheet.write(i+1,11,data[i]['a_action_type'])
 

@@ -625,7 +625,12 @@ def move_export(request):
 		sheet.write(i+1,14,data[i]['a_action_state'])
 		sheet.write(i+1,15,data[i]['a_model'])
 		sheet.write(i+1,16,data[i]['a_action_user'])
-		sheet.write(i+1,17,data[i]['a_record_time'])
+
+		a_record_time = data[i]['a_record_time']
+		if a_record_time and len(a_record_time) > 10:
+			a_record_time = a_record_time[:10]
+
+		sheet.write(i+1,17,a_record_time)
 		sheet.write(i+1,18,data[i]['a_opr_user'])
 		sheet.write(i+1,19,data[i]['a_budget'])
 		sheet.write(i+1,20,data[i]['a_referendum'])
